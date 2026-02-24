@@ -1,0 +1,3 @@
+[submodule "deps/BobinkQtOpcUa"]
+	path = deps/BobinkQtOpcUa
+	url = https://git.tvcloud.fr/BobinkQtOpcUa
