@@ -12,6 +12,52 @@ Item {
 
     property alias manualModeButton: manualModeButton
 
+    property int emIndex: 8
+    property int cmInactiveMask: Constants.cmInactiveMasks[emIndex]
+
+    function toggleCM(emIndex, cmIndex) {
+        var currentMask = Constants.cmInactiveMasks[emIndex]
+        var newMask
+        var isEnabled = (currentMask & (1 << cmIndex)) === 0
+        if (isEnabled) {
+            newMask = currentMask | (1 << cmIndex)
+        } else {
+            newMask = currentMask & ~(1 << cmIndex)
+        }
+        opcuaNodeInactiveMasks.writeValue(Number(newMask))
+        var newMasks = Constants.cmInactiveMasks.slice()
+        newMasks[emIndex] = newMask
+        Constants.cmInactiveMasks = newMasks
+    }
+
+    OpcUaMonitoredNode {
+        id: opcuaNodeInactiveMasks
+        monitored: rootApp.visible
+
+        nodeId: "ns=6;s=Arp.Plc.Eclr/UN00_Modules.EM[" + root.emIndex + "].CM_InactiveMask"
+        onValueChanged: {
+            if (value !== undefined) {
+                var newMasks = Constants.cmInactiveMasks.slice()
+                newMasks[emIndex] = value
+                Constants.cmInactiveMasks = newMasks
+            }
+        }
+        onWriteCompleted: (success, message) => {
+            console.log(nodeId + ": " + message);
+        }
+    }
+
+    onCmInactiveMaskChanged: {
+        // update status for CHAUFFE : cmIndex = 1
+        if ((root.cmInactiveMask & (1 << 1)) === 0) {
+            switchChauffeFour1.checked = true
+            switchChauffeFour2.checked = true
+        } else {
+            switchChauffeFour1.checked = false
+            switchChauffeFour2.checked = false
+        }
+    }
+
     ColumnLayout {
         id: columnlayout
 
@@ -46,10 +92,6 @@ Item {
             ManuelSwitch {
                 id: manualModeButton
                 Layout.alignment: Qt.AlignRight
-                // OPCUANode {
-                //     nodeId: "Arp.Plc.Eclr/modeAutomatiqueFour1"
-                //     onValueChanged: manualModeButton.checked = value
-                // }
             }
         }
 
@@ -130,6 +172,7 @@ Item {
                                 }
 
                                 Image {
+	sourceSize: Qt.size(width, height)
                                     source: "../Resources/Images/Camera.svg"
                                     Layout.preferredWidth: congnex1Btn.width * 0.5
                                     Layout.preferredHeight: width
@@ -143,7 +186,7 @@ Item {
                                 anchors.fill: parent
 
                                 onClicked: {
-                                    cognexLoader.source = "../Maintenance/WebEngine.qml"
+                                    cognexLoader.source = "WebEngine.qml"
                                     cognexPage.visible = true
                                     columnlayout.visible = false
                                     stackLayoutPage.numeroCognex = 1
@@ -187,8 +230,8 @@ Item {
                                 Layout.preferredHeight: 60 * Constants.scaleFactor
                                 Layout.preferredWidth: 175 * Constants.scaleFactor
                                 min: 0
-                                max: 300
-                                nodeId: "Arp.Plc.Eclr/consigneTemperatureFour1"
+                                max: 150
+                                nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe1.Cmd.Consigne"
                                 enabled: switchChauffeFour1.checked
                             }
                         }
@@ -206,12 +249,9 @@ Item {
                                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                                 Layout.preferredHeight: 50 * Constants.scaleFactor
                                 Layout.preferredWidth: 100 * Constants.scaleFactor
-                                nodeId: "Arp.Plc.Eclr/chauffeBCGeneral"
 
-                                onCheckedChanged: {
-                                    if (!switchChauffeFour1.checked) {
-                                        consigneFour1.numericPart = ""
-                                    }
+                                onClicked: {
+                                    toggleCM(root.emIndex, 1)
                                 }
                             }
 
@@ -253,7 +293,8 @@ Item {
                                         Layout.preferredWidth: 175 * Constants.scaleFactor
                                         min: 0
                                         max: 10000
-                                        nodeId: "Arp.Plc.Eclr/ratioDeposeFilsFour1"
+                                        offset: 0.01
+                                        nodeId: "ns=6;s=Arp.Plc.Eclr/rAxis_RD[2].Gear.GearNum"
                                     }
 
                                 }
@@ -275,7 +316,8 @@ Item {
                                         Layout.preferredWidth: 175 * Constants.scaleFactor
                                         min: 0
                                         max: 10000
-                                        nodeId: "Arp.Plc.Eclr/ratioTapisFour1"
+                                        offset: 0.01
+                                        nodeId: "ns=6;s=Arp.Plc.Eclr/rAxis_RD[3].Gear.GearNum"
 
                                     }
 
@@ -306,7 +348,7 @@ Item {
                                 // Layout.fillHeight: true       // ----> semble créer des récursivités, donc des crashs
                                 Layout.preferredHeight: Constants.dp(115) // ----> pas responsive mais efficace
                                 Layout.preferredWidth: height
-                                nodeId: "Arp.Plc.Eclr/temperatureFour1"
+                                nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe1.Temperature.Four"
                                 fontSize: Constants.sp(29)
                                 unit: "°C"
                                 max: 300
@@ -326,7 +368,7 @@ Item {
                                     Layout.alignment: Qt.AlignHCenter
                                     Layout.preferredHeight: tempMoyenneLayout.height / 3
                                     Layout.preferredWidth: height
-                                    nodeId: "Arp.Plc.Eclr/temperatureBCFour1"
+                                    nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe1.Temperature.BC"
                                     fontSize: 0
                                     unit: "°C"
                                     max: 300
@@ -334,13 +376,15 @@ Item {
                                 }
 
                                 Label {
+                                    id: lblBCFour1
                                     font.pixelSize: 22 * Constants.scaleFactor
                                     font.bold: true
                                     color: appTheme.bodyText
+                                    text: "NaN"
                                     OpcUaMonitoredNode {
                                         monitored: root.visible
-                                        nodeId: "Arp.Plc.Eclr/temperatureBCFour1"
-                                        onValueChanged: parent.text = value.toFixed(1) + "°C"
+                                        nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe1.Temperature.BC"
+                                        onValueChanged: lblBCFour1.text = value.toFixed(1) + "°C"
                                     }
                                 }
 
@@ -361,8 +405,7 @@ Item {
                                     Layout.alignment: Qt.AlignHCenter
                                     Layout.preferredHeight: gaugeTempBCFour1.height
                                     Layout.preferredWidth: height
-                                    nodeId: "Arp.Plc.Eclr/pt100_IN_Four1" // pt100_IN_Four1 ne marche pas
-                                    offset: 0.1
+                                    nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe1.Temperature.Input"
                                     fontSize: 0
                                     unit: "°C"
                                     max: 300
@@ -370,13 +413,15 @@ Item {
                                 }
 
                                 Label {
+                                    id: lblEntreeFour1
                                     font.pixelSize: 22 * Constants.scaleFactor
                                     font.bold: true
                                     color: appTheme.bodyText
+                                    text: "NaN"
                                     OpcUaMonitoredNode {
                                         monitored: root.visible
-                                        nodeId: "Arp.Plc.Eclr/pt100_IN_Four1"
-                                        onValueChanged: parent.text = (value * gaugeTempINFour1.offset).toFixed(1) + "°C"
+                                        nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe1.Temperature.Input"
+                                        onValueChanged: lblEntreeFour1.text = value + "°C"
                                     }
                                 }
 
@@ -397,8 +442,7 @@ Item {
                                     Layout.alignment: Qt.AlignHCenter
                                     Layout.preferredHeight: gaugeTempBCFour1.height
                                     Layout.preferredWidth: height
-                                    nodeId: "Arp.Plc.Eclr/pt100_OUT_Four1"
-                                    offset: 0.1
+                                    nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe1.Temperature.Output"
                                     fontSize: 0
                                     unit: "°C"
                                     max: 300
@@ -406,13 +450,15 @@ Item {
                                 }
 
                                 Label {
+                                    id: lblSortieFour1
                                     font.pixelSize: 22 * Constants.scaleFactor
                                     font.bold: true
                                     color: appTheme.bodyText
+                                    text: "NaN"
                                     OpcUaMonitoredNode {
                                         monitored: root.visible
-                                        nodeId: "Arp.Plc.Eclr/pt100_OUT_Four1"
-                                        onValueChanged: parent.text = (value * gaugeTempINFour1.offset).toFixed(1) + "°C"
+                                        nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe1.Temperature.Output"
+                                        onValueChanged: lblSortieFour1.text = value+ "°C"
                                     }
                                 }
 
@@ -575,6 +621,7 @@ Item {
                                 }
 
                                 Image {
+	sourceSize: Qt.size(width, height)
                                     source: "../Resources/Images/Camera.svg"
                                     Layout.preferredWidth: congnex2Btn.width * 0.5
                                     Layout.preferredHeight: width
@@ -588,7 +635,7 @@ Item {
                                 anchors.fill: parent
 
                                 onClicked: {
-                                    cognexLoader.source = "../Maintenance/WebEngine.qml"
+                                    cognexLoader.source = "WebEngine.qml"
                                     cognexPage.visible = true
                                     columnlayout.visible = false
                                     stackLayoutPage.numeroCognex = 2
@@ -631,8 +678,8 @@ Item {
                                 Layout.preferredHeight: 60 * Constants.scaleFactor
                                 Layout.preferredWidth: 175 * Constants.scaleFactor
                                 min: 0
-                                max: 300
-                                nodeId: "Arp.Plc.Eclr/consigneTemperatureFour2"
+                                max: 150
+                                nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe2.Cmd.Consigne"
                                 enabled: switchChauffeFour2.checked
                             }
                         }
@@ -650,12 +697,9 @@ Item {
                                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                                 Layout.preferredHeight: 50 * Constants.scaleFactor
                                 Layout.preferredWidth: 100 * Constants.scaleFactor
-                                nodeId: "Arp.Plc.Eclr/chauffeBCGeneral"
 
-                                onCheckedChanged: {
-                                    if (!switchChauffeFour2.checked) {
-                                        consigneFour2.numericPart = ""
-                                    }
+                                onClicked: {
+                                    toggleCM(root.emIndex, 1)
                                 }
                             }
 
@@ -697,7 +741,8 @@ Item {
                                         Layout.preferredWidth: 175 * Constants.scaleFactor
                                         min: 0
                                         max: 10000
-                                        nodeId: "Arp.Plc.Eclr/ratioDeposeFilsFour2"
+                                        offset: 0.01
+                                        nodeId: "ns=6;s=Arp.Plc.Eclr/rAxis_Production[7].Gear.GearNum"
                                     }
 
                                 }
@@ -719,7 +764,8 @@ Item {
                                         Layout.preferredWidth: 175 * Constants.scaleFactor
                                         min: 0
                                         max: 10000
-                                        nodeId: "Arp.Plc.Eclr/ratioTapisFour2"
+                                        offset: 0.01
+                                        nodeId: "ns=6;s=Arp.Plc.Eclr/rAxis_Production[8].Gear.GearNum"
 
                                     }
 
@@ -727,7 +773,6 @@ Item {
                             }
                         }
                     }
-
 
                     RowLayout {
                         id: temperaturesFour2
@@ -750,7 +795,7 @@ Item {
                                 // Layout.fillHeight: true       // ----> semble créer des récursivités, donc des crashs
                                 Layout.preferredHeight: Constants.dp(115) // ----> pas responsive mais efficace
                                 Layout.preferredWidth: height
-                                nodeId: "Arp.Plc.Eclr/temperatureFour2"
+                                nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe2.Temperature.Four"
                                 fontSize: Constants.sp(29)
                                 unit: "°C"
                                 max: 300
@@ -770,7 +815,7 @@ Item {
                                     Layout.alignment: Qt.AlignHCenter
                                     Layout.preferredHeight: tempMoyenneLayout.height / 3
                                     Layout.preferredWidth: height
-                                    nodeId: "Arp.Plc.Eclr/temperatureBCFour2"
+                                    nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe2.Temperature.BC"
                                     fontSize: 0
                                     unit: "°C"
                                     max: 300
@@ -778,13 +823,15 @@ Item {
                                 }
 
                                 Label {
+                                    id: lblBCFour2
                                     font.pixelSize: 22 * Constants.scaleFactor
                                     font.bold: true
                                     color: appTheme.bodyText
+                                    text: "NaN"
                                     OpcUaMonitoredNode {
                                         monitored: root.visible
-                                        nodeId: "Arp.Plc.Eclr/temperatureBCFour2"
-                                        onValueChanged: parent.text = value.toFixed(1) + "°C"
+                                        nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe2.Temperature.BC"
+                                        onValueChanged: lblBCFour2.text = value.toFixed(1) + "°C"
                                     }
                                 }
 
@@ -805,8 +852,7 @@ Item {
                                     Layout.alignment: Qt.AlignHCenter
                                     Layout.preferredHeight: gaugeTempBCFour1.height
                                     Layout.preferredWidth: height
-                                    nodeId: "Arp.Plc.Eclr/pt100_IN_Four2" // pt100_IN_Four1 ne marche pas
-                                    offset: 0.1
+                                    nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe2.Temperature.Input"
                                     fontSize: 0
                                     unit: "°C"
                                     max: 300
@@ -814,13 +860,15 @@ Item {
                                 }
 
                                 Label {
+                                    id: lblEntreeFour2
                                     font.pixelSize: 22 * Constants.scaleFactor
                                     font.bold: true
                                     color: appTheme.bodyText
+                                    text: "NaN"
                                     OpcUaMonitoredNode {
                                         monitored: root.visible
-                                        nodeId: "Arp.Plc.Eclr/pt100_IN_Four2"
-                                        onValueChanged: parent.text = (value * gaugeTempINFour2.offset).toFixed(1) + "°C"
+                                        nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe2.Temperature.Input"
+                                        onValueChanged: lblEntreeFour2.text = value + "°C"
                                     }
                                 }
 
@@ -841,8 +889,7 @@ Item {
                                     Layout.alignment: Qt.AlignHCenter
                                     Layout.preferredHeight: gaugeTempBCFour1.height
                                     Layout.preferredWidth: height
-                                    nodeId: "Arp.Plc.Eclr/pt100_OUT_Four2"
-                                    offset: 0.1
+                                    nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe2.Temperature.Output"
                                     fontSize: 0
                                     unit: "°C"
                                     max: 300
@@ -850,13 +897,15 @@ Item {
                                 }
 
                                 Label {
+                                    id: lblSortieFour2
                                     font.pixelSize: 22 * Constants.scaleFactor
                                     font.bold: true
                                     color: appTheme.bodyText
+                                    text: "NaN"
                                     OpcUaMonitoredNode {
                                         monitored: root.visible
-                                        nodeId: "Arp.Plc.Eclr/pt100_OUT_Four2"
-                                        onValueChanged: parent.text = (value * gaugeTempINFour2.offset).toFixed(1) + "°C"
+                                        nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe2.Temperature.Output"
+                                        onValueChanged: lblSortieFour2.text = value + "°C"
                                     }
                                 }
 

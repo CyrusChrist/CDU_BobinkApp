@@ -67,6 +67,7 @@ Item {
         Item {
 
             Image {
+	sourceSize: Qt.size(width, height) 
                 id: svgImage
                 source: "../Resources/Images/Schema3D.svg"
                 width: 5700

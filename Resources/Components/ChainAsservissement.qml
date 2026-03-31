@@ -33,6 +33,7 @@ RowLayout {
         Layout.preferredWidth: 50 * Constants.scaleFactor
         Layout.preferredHeight: 50 * Constants.scaleFactor
         Image {
+	sourceSize: Qt.size(width, height) 
             anchors.fill: parent
             fillMode: Image.PreserveAspectFit
             source: !buttonLink.checked ? "../Images/LinkBroken.svg" : "../Images/Link.svg"

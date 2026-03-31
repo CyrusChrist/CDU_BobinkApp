@@ -12,6 +12,64 @@ Item {
     property alias manuelPreTraitementButton: manuelPreTraitementButton
     property alias switchAspirationPlasma: switchAspirationPlasma
 
+    property int emIndex: 2
+    property int cmInactiveMask: Constants.cmInactiveMasks[emIndex]
+
+    function toggleCM(emIndex, cmIndex) {
+        var currentMask = Constants.cmInactiveMasks[emIndex]
+        var newMask
+        var isEnabled = (currentMask & (1 << cmIndex)) === 0
+        if (isEnabled) {
+            newMask = currentMask | (1 << cmIndex)
+        } else {
+            newMask = currentMask & ~(1 << cmIndex)
+        }
+        opcuaNodeInactiveMasks.writeValue(Number(newMask))
+        var newMasks = Constants.cmInactiveMasks.slice()
+        newMasks[emIndex] = newMask
+        Constants.cmInactiveMasks = newMasks
+    }
+
+    OpcUaMonitoredNode {
+        id: opcuaNodeInactiveMasks
+        monitored: rootApp.visible
+
+        nodeId: "ns=6;s=Arp.Plc.Eclr/UN00_Modules.EM[" + root.emIndex + "].CM_InactiveMask"
+        onValueChanged: {
+            if (value !== undefined) {
+                var newMasks = Constants.cmInactiveMasks.slice()
+                newMasks[emIndex] = value
+                Constants.cmInactiveMasks = newMasks
+            }
+        }
+        onWriteCompleted: (success, message) => {
+            console.log(nodeId + ": " + message);
+        }
+    }
+
+    onCmInactiveMaskChanged: {
+        // update status for PLASMA : cmIndex = 0
+        if ((root.cmInactiveMask & (1 << 0)) === 0) {
+            checkboxPlasma.checked = true
+        } else {
+            checkboxPlasma.checked = false
+        }
+
+        // update status for SPRAYING : cmIndex = 1
+        if ((root.cmInactiveMask & (1 << 1)) === 0) {
+            checkboxSpraying.checked = true
+        } else {
+            checkboxSpraying.checked = false
+        }
+
+        // update status for PURGE SOUFFLERIE : cmIndex = 2
+        if ((root.cmInactiveMask & (1 << 2)) === 0) {
+            purgeCheckbox.checked = true
+        } else {
+            purgeCheckbox.checked = false
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 40 * Constants.scaleFactor
@@ -88,6 +146,7 @@ Item {
                     border.color: (checked || manuelPreTraitementButton.checked) ? "transparent" : appTheme.bodyText
 
                     Image {
+	sourceSize: Qt.size(width, height)
                         anchors.centerIn: parent
                         width: parent.height * 0.6
                         height: width
@@ -112,14 +171,7 @@ Item {
                     visible: !manuelPreTraitementButton.checked
                     onClicked: {
                         checkboxPlasma.checked = !checkboxPlasma.checked
-                        opcuaNodePlasma.setValue(checkboxPlasma.checked)
-                    }
-
-                    OpcUaMonitoredNode {
-                        monitored: root.visible
-                        id: opcuaNodePlasma
-                        nodeId: "Arp.Plc.Eclr/plasmaEnable"
-                        onValueChanged: checkboxPlasma.checked = value
+                        toggleCM(root.emIndex, 0)
                     }
                 }
 
@@ -161,6 +213,7 @@ Item {
                     border.color: (checked || manuelPreTraitementButton.checked) ? "transparent" : appTheme.bodyText
 
                     Image {
+	sourceSize: Qt.size(width, height)
                         anchors.centerIn: parent
                         width: parent.height * 0.6
                         height: width
@@ -185,14 +238,7 @@ Item {
                     visible: !manuelPreTraitementButton.checked
                     onClicked: {
                         checkboxSpraying.checked = !checkboxSpraying.checked
-                        opcuaNodeSpraying.setValue(checkboxSpraying.checked)
-                    }
-
-                    OpcUaMonitoredNode {
-                        monitored: root.visible
-                        id: opcuaNodeSpraying
-                        nodeId: "Arp.Plc.Eclr/pompePreTraitementEnable"
-                        onValueChanged: checkboxSpraying.checked = value
+                        toggleCM(root.emIndex, 1)
                     }
                 }
 
@@ -206,6 +252,7 @@ Item {
                 Layout.row: 1
                 Layout.column: 3
                 Layout.rowSpan: 3
+                Layout.alignment: Qt.AlignTop
 
                 shadowColor: manuelPreTraitementButton.checked ? "#deae2a" : "black"
 
@@ -302,11 +349,15 @@ Item {
                         Item {Layout.fillWidth: true}
 
                         CustomCheckbox {
+                            id: purgeCheckbox
                             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                             Layout.preferredWidth: implicitWidth * 1.33 * Constants.scaleFactor
                             Layout.preferredHeight: implicitHeight * 1.33 * Constants.scaleFactor
-                            nodeId: "Arp.Plc.Eclr/enablePurgeAnneauxDePouyesPreTraitement"
                             visible: !manuelPreTraitementButton.checked
+
+                            onClicked: {
+                                toggleCM(root.emIndex, 2)
+                            }
                         }
 
                         CustomSwitch {
@@ -345,7 +396,7 @@ Item {
                             unit: qsTr("ms")
                             min: 50
                             max: 100000
-                            nodeId: "Arp.Plc.Eclr/dureePurgeAnneauxDePouyesPreTraitement"
+                            nodeId: "ns=6;s=Arp.Plc.Eclr/purgeAirComprimePreTraitement.Duree"
                         }
                     }
 
@@ -372,7 +423,7 @@ Item {
                             unit: qsTr("s")
                             min: 0.1
                             max: 3600
-                            nodeId: "Arp.Plc.Eclr/frequencePurgeAnneauxDePouyesPreTraitement"
+                            nodeId: "ns=6;s=Arp.Plc.Eclr/purgeAirComprimePreTraitement.Frequence"
                             offset: 0.001
                         }
                     }
@@ -380,6 +431,7 @@ Item {
                     ColumnLayout {
                         Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
                         spacing: Constants.dp(10)
+                        visible: false
 
                         Label {
                             text: qsTr("Temps d'utilisation du sac à poussière")
@@ -489,45 +541,20 @@ Item {
                                 Layout.preferredHeight: implicitHeight * 1.33 * Constants.scaleFactor
                                 checked: !!value
                                 onClicked: {
-                                    console.log("Changing value buse : " + index + " to " + checked)
-                                    opcuaNodePlasmaNozzle.setValueArray(index, checked)
+                                    opcuaNodePlasmaNozzle.writeValue(checked)
+                                }
+                            }
+
+                            OpcUaMonitoredNode {
+                                monitored: root.visible
+                                id: opcuaNodePlasmaNozzle
+                                nodeId: model.nodeId
+                                onValueChanged: {
+                                    listModelPlasmaNozzleSelection.setProperty(index,"value",value)
                                 }
                             }
                         }
                     }
-
-                    // Label {
-                    //     text: qsTr("Temps d'utilisation du filtre")
-                    //     Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                    //     color: appTheme.bodyText
-                    //     font.pixelSize: Constants.sp(18)
-                    // }
-
-                    // RowLayout {
-                    //     Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                    //     spacing: Constants.dp(15)
-
-                    //     NumericInput {
-                    //         horizontalAlignment: Text.AlignLeft
-                    //         verticalAlignment: Text.AlignVCenter
-                    //         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    //         Layout.preferredWidth: Constants.dp(125)
-                    //         leftPadding: Constants.dp(10)
-                    //         unit: ""
-                    //         min: 0
-                    //         max: 10000
-                    //         readOnly: true
-                    //         nodeId: "Arp.Plc.Eclr/tempsStringFiltreAspirationPlasmaPreTraitement"
-                    //         nodeIdReset: "Arp.Plc.Eclr/resetTempsAspirationPlasmaPreTraitement"
-                    //     }
-
-                    //     Label {
-                    //         text: qsTr("/ 20h")
-                    //         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    //         color: appTheme.bodyText
-                    //         font.pixelSize: Constants.sp(18)
-                    //     }
-                    // }
 
                 }
 
@@ -616,7 +643,7 @@ Item {
                             unit: "%"
                             min: 15
                             max: 100
-                            nodeId: "Arp.Plc.Eclr/consignePompePreTraitement"
+                            nodeId: "ns=6;s=Arp.Plc.Eclr/pompePreTraitement.Cmd.Pct"
                         }
                     }
 
@@ -639,12 +666,13 @@ Item {
                                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                                 Layout.preferredWidth: Constants.dp(125)
                                 leftPadding: Constants.dp(10)
-                                unit: ""
+                                unit: "s"
                                 min: 0
                                 max: 10000
+                                offset: 0.001
                                 readOnly: true
-                                nodeId: "Arp.Plc.Eclr/tempsStringFiltrePreTraitement"
-                                nodeIdReset: "Arp.Plc.Eclr/resetFiltrePreTraitement"
+                                nodeId: "ns=6;s=Arp.Plc.Eclr/pompePreTraitement.Filtre.UsingTime"
+                                nodeIdReset: "ns=6;s=Arp.Plc.Eclr/pompePreTraitement.Filtre.RaZ"
                             }
 
                             Label {
@@ -681,33 +709,28 @@ Item {
         }
     }
 
-    OpcUaMonitoredNode {
-        monitored: root.visible
-        id: opcuaNodePlasmaNozzle
-        nodeId: "Arp.Plc.Eclr/busesPlasmaPreTraitement"
-        onValueChanged: {
-            for(var i = 0 ; i < listModelPlasmaNozzleSelection.count ; i++ ){
-                listModelPlasmaNozzleSelection.setProperty(i,"value",value[i])
-            }
-        }
-    }
+
     ListModel{
         id: listModelPlasmaNozzleSelection
         ListElement{
             number: 1
             value: false
+            nodeId: "ns=6;s=Arp.Plc.Eclr/plasma.Buses[1].Enable"
         }
         ListElement{
             number: 2
             value: false
+            nodeId: "ns=6;s=Arp.Plc.Eclr/plasma.Buses[2].Enable"
         }
         ListElement{
             number: 3
             value: false
+            nodeId: "ns=6;s=Arp.Plc.Eclr/plasma.Buses[3].Enable"
         }
         ListElement{
             number: 4
             value: false
+            nodeId: "ns=6;s=Arp.Plc.Eclr/plasma.Buses[4].Enable"
         }
     }
 

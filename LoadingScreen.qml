@@ -26,6 +26,7 @@ Item {
         }
 
         Image {
+	sourceSize: Qt.size(width, height) 
             id: logoImage
 
             source: "Resources/Images/BobinkLogo.svg"
@@ -77,6 +78,7 @@ Item {
         }
 
         Image {
+	sourceSize: Qt.size(width, height) 
             id: bobinkTitle
             source: "Resources/Images/BobinkTitle.svg"
             Layout.alignment: Qt.AlignHCenter
@@ -419,6 +421,7 @@ Item {
                 }
 
                 Image {
+	sourceSize: Qt.size(width, height) 
                     source: "Resources/Images/Check.svg"
                     Layout.preferredHeight: tripleDot.width
                     Layout.preferredWidth: height

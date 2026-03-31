@@ -111,7 +111,7 @@ Item {
                                 max: 100
                                 unit: "g"
                                 offset: 0.1
-                                nodeId: "Arp.Plc.Eclr/LGL_Connect.Consigne.consigneTension"
+                                nodeId: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Param.Tension"
                             }
 
 
@@ -132,7 +132,7 @@ Item {
                                 min: 0.5
                                 max: 100
                                 unit: "m/min"
-                                nodeId: "Arp.Plc.Eclr/LGL_Connect.VitesseMoyenne"
+                                nodeId: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Velocity"
                                 digit: 1
                             }
 
@@ -277,7 +277,7 @@ Item {
                                     Layout.row: model.index + 1
                                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                                     Layout.preferredHeight: gridBox.rowH
-                                    text: "0.0 g"
+                                    text: model.tension / 10 + " g"
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
                                     color: appTheme.bodyText
@@ -285,7 +285,7 @@ Item {
                                     OpcUaMonitoredNode {
                                         monitored: lGLFrame.visible
                                         nodeId: model.namespace + ".Tension"
-                                        onValueChanged: parent.text = value / 10.0 + " g"
+                                        onValueChanged: feederLGL.setProperty(index, "tension", value)
                                     }
                                 }
                             }
@@ -329,7 +329,7 @@ Item {
                                         OpcUaMonitoredNode {
                                             monitored: lGLFrame.visible
                                             nodeId: model.namespace + ".Vitesse"
-                                            onValueChanged: parent.text = value + " m/min"
+                                            onValueChanged: feederLGL.setProperty(index, "vitesse", value.toString())
                                         }
                                     }
                                 }
@@ -344,10 +344,14 @@ Item {
                                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                                     Layout.preferredHeight: gridBox.rowH * 0.9
                                     Layout.preferredWidth: gridBox.rowH * 0.9
+                                    value: model.enable || model.erreur
+                                    color: model.erreur ? "red" : "green"
                                     OpcUaMonitoredNode {
-                                        monitored: lGLFrame.visible; nodeId: model.namespace + ".Enable"; onValueChanged: parent.value = value }
+                                        monitored: lGLFrame.visible; nodeId: model.namespace + ".Enable";
+                                        onValueChanged: feederLGL.setProperty(index + 1, "enable", value) }
                                     OpcUaMonitoredNode {
-                                        monitored: lGLFrame.visible; nodeId: model.namespace + ".Erreur" }
+                                        monitored: lGLFrame.visible; nodeId: model.namespace + ".Erreur";
+                                        onValueChanged: feederLGL.setProperty(index + 1, "erreur", value) }
                                 }
                             }
                         }
@@ -363,7 +367,7 @@ Item {
         id: feederLGL
         ListElement {
             bobine: "1"
-            namespace: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Feeders[0]"
+            namespace: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Spin[1]"
             consigne: "0.0"
             tension: 0.0
             vitesse: "0"
@@ -373,7 +377,7 @@ Item {
         }
         ListElement {
             bobine: "2"
-            namespace: "Arp.Plc.Eclr/LGL_Connect.Feeders[1]"
+            namespace: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Spin[2]"
             consigne: "0.0"
             tension: 0.0
             vitesse: "0"
@@ -383,7 +387,7 @@ Item {
         }
         ListElement {
             bobine: "3"
-            namespace: "Arp.Plc.Eclr/LGL_Connect.Feeders[2]"
+            namespace: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Spin[3]"
             consigne: "0.0"
             tension: 0.0
             vitesse: "0"
@@ -393,7 +397,7 @@ Item {
         }
         ListElement {
             bobine: "4"
-            namespace: "Arp.Plc.Eclr/LGL_Connect.Feeders[3]"
+            namespace: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Spin[4]"
             consigne: "0.0"
             tension: 0.0
             vitesse: "0"
@@ -403,7 +407,7 @@ Item {
         }
         ListElement {
             bobine: "5"
-            namespace: "Arp.Plc.Eclr/LGL_Connect.Feeders[4]"
+            namespace: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Spin[5]"
             consigne: "0.0"
             tension: 0.0
             vitesse: "0"
@@ -413,7 +417,7 @@ Item {
         }
         ListElement {
             bobine: "6"
-            namespace: "Arp.Plc.Eclr/LGL_Connect.Feeders[5]"
+            namespace: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Spin[6]"
             consigne: "0.0"
             tension: 0.0
             vitesse: "0"
@@ -423,7 +427,7 @@ Item {
         }
         ListElement {
             bobine: "7"
-            namespace: "Arp.Plc.Eclr/LGL_Connect.Feeders[6]"
+            namespace: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Spin[7]"
             consigne: "0.0"
             tension: 0.0
             vitesse: "0"
@@ -433,7 +437,7 @@ Item {
         }
         ListElement {
             bobine: "8"
-            namespace: "Arp.Plc.Eclr/LGL_Connect.Feeders[7]"
+            namespace: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Spin[8]"
             consigne: "0.0"
             tension: 0.0
             vitesse: "0"
@@ -443,7 +447,7 @@ Item {
         }
         ListElement {
             bobine: "9"
-            namespace: "Arp.Plc.Eclr/LGL_Connect.Feeders[8]"
+            namespace: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Spin[9]"
             consigne: "0.0"
             tension: 0.0
             vitesse: "0"
@@ -453,7 +457,7 @@ Item {
         }
         ListElement {
             bobine: "10"
-            namespace: "Arp.Plc.Eclr/LGL_Connect.Feeders[9]"
+            namespace: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Spin[10]"
             consigne: "0.0"
             tension: 0.0
             vitesse: "0"
@@ -463,7 +467,7 @@ Item {
         }
         ListElement {
             bobine: "11"
-            namespace: "Arp.Plc.Eclr/LGL_Connect.Feeders[10]"
+            namespace: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Spin[11]"
             consigne: "0.0"
             tension: 0.0
             vitesse: "0"
@@ -473,7 +477,7 @@ Item {
         }
         ListElement {
             bobine: "12"
-            namespace: "Arp.Plc.Eclr/LGL_Connect.Feeders[11]"
+            namespace: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Spin[12]"
             consigne: "0.0"
             tension: 0.0
             vitesse: "0"
@@ -560,7 +564,7 @@ Item {
                 min: 0.5
                 max: 100
                 unit: "g"
-                nodeId: "Arp.Plc.Eclr/LGL_Connect.Consigne.consigneDetectionEcartTension"
+                nodeId: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Param.SeuilDetectionTension"
             }
             Label {
                 // visible: (Authentification.currentUserType > 2) ? true : false
@@ -581,7 +585,7 @@ Item {
                 min: 0.5
                 max: 100
                 unit: "m/min"
-                nodeId: "Arp.Plc.Eclr/LGL_Connect.Consigne.consigneDetectionEcartVitesse"
+                nodeId: "ns=6;s=Arp.Plc.Eclr/LGL_Connect.Param.SeuilDetectionVitesse"
                 font.pixelSize: gridLayoutConsigneDeep.fontSizeTab
             }
 

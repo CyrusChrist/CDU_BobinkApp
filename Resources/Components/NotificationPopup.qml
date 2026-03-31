@@ -10,10 +10,14 @@ import "../.."
 Popup {
     id: root
 
-    property color warningColor: /*"#fdff2700" //  */"#FFF100"
-    property string text: "Casse fil IR (C305)"
-    property string subText: "Repasser le fil dans la machine depuis l'IR"
+    property color warningColor: "#FFF100"
+    property string text: "Message d'erreur"
+    property string subText: "Description"
     property int importance: 1
+    property string em
+    property string cm
+    property string date: ""
+    property string time: ""
 
     modal: importance === 1
     focus: importance === 1
@@ -62,8 +66,12 @@ Popup {
                 anchors.fill: parent
 
                 RowLayout {
-                    Layout.alignment: Qt.AlignHCenter
+                    Layout.alignment: Qt.AlignLeft | Qt.AlignTop
                     spacing: 30 * Constants.scaleFactor
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+
+                    Layout.margins: Constants.dp(35)
 
                     Rectangle {
                         id: imageNotif
@@ -73,33 +81,43 @@ Popup {
                         color: appTheme.backgroundColor
                         border.color: "white"
                         border.width: 2 * Constants.scaleFactor
+
+                        Image {
+                            anchors.centerIn: parent
+                            height: parent.height * 0.8
+                            width: height
+                            source: !isNaN(root.em) && !isNaN(root.cm) ?
+                                        "../Images/" + Constants.cmImages[root.em][root.cm] + ".svg" :
+                                        "../Images/Info.svg"
+                            fillMode: Image.PreserveAspectCrop
+                            sourceSize: Qt.size(width, height)
+                        }
                     }
 
                     ColumnLayout {
-                        Layout.bottomMargin: (background.height - imageNotif.height) / 2
+                        Layout.bottomMargin: (background.height - imageNotif.height) / 8
                         Layout.topMargin: Layout.bottomMargin
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
 
                         RowLayout {
                             Layout.preferredWidth: parent.width
 
                             Label {
-                                id: dateText
+                                id: emCmText
                                 color: "white"
-                                property var currentDate: new Date()
-                                text: Qt.formatDateTime(currentDate, "dd/MM hh:mm:ss")
+                                text: Constants.emNames[root.em] + " | " + Constants.cmNames[root.em][root.cm]
                                 font.family: "Object Sans"
-                                font.pixelSize: 20 * Constants.scaleFactor
+                                font.pixelSize: Constants.sp(18)
                                 Layout.alignment: Qt.AlignLeft
                             }
 
-                            // Item {Layout.fillWidth: true}
-
                             Label {
-                                id: notifIndex
+                                id: dateText
                                 color: "white"
-                                text: "1/5"
+                                text: root.date + " - " + root.time
                                 font.family: "Object Sans"
-                                font.pixelSize: 20 * Constants.scaleFactor
+                                font.pixelSize: Constants.sp(18)
                                 Layout.alignment: Qt.AlignRight
                             }
                         }
@@ -107,9 +125,11 @@ Popup {
                         Label {
                             color: "white"
                             text: root.text
-                            font.pixelSize: 60 * Constants.scaleFactor
+                            wrapMode: Text.Wrap
+                            font.pixelSize: Constants.sp(40)
                             horizontalAlignment: Text.AlignLeft
                             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                            Layout.fillWidth: true
                             font.bold: true
                             font.family: "Object Sans"
                         }
@@ -118,12 +138,11 @@ Popup {
                             color: "white"
                             text: root.subText
                             wrapMode: Text.Wrap
-                            font.pixelSize: 40 * Constants.scaleFactor
+                            font.pixelSize: Constants.sp(30)
                             horizontalAlignment: Text.AlignLeft
-                            font.italic: true
                             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                            font.bold: true
                             font.family: "Object Sans"
+                            Layout.fillHeight: true
 
                         }
 
@@ -138,7 +157,7 @@ Popup {
 
                             contentItem: Text {
                                 color: "white"
-                                text: "ACQUITTER"
+                                text: "FERMER"
                                 font.pixelSize: 25 * Constants.scaleFactor
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
@@ -174,7 +193,7 @@ Popup {
         Rectangle {
             id: rectangleLvl2
             anchors.fill: parent
-            radius: 35 * Constants.scaleFactor
+            radius: 28 * Constants.scaleFactor
             color: Qt.darker(appTheme.backgroundColor, 1.5)
             border.color: root.warningColor
             border.width: 0 * Constants.scaleFactor
@@ -203,6 +222,17 @@ Popup {
                     border.color: root.warningColor
                     border.width: 2 * Constants.scaleFactor
                     radius: height / 2
+
+                    Image {
+                        sourceSize: Qt.size(width, height)
+                        anchors.centerIn: parent
+                        height: parent.height * 0.65
+                        width: height
+                        source: !isNaN(root.em) && !isNaN(root.cm) ?
+                                    "../Images/" + Constants.cmImages[root.em][root.cm] + ".svg" :
+                                    "../Images/Info.svg"
+                        fillMode: Image.PreserveAspectCrop
+                    }
                 }
 
                 ColumnLayout {
@@ -215,8 +245,7 @@ Popup {
                     Label {
                         id: dateText2
                         color: "white"
-                        property var currentDate: new Date()
-                        text: Qt.formatDateTime(currentDate, "dd/MM hh:mm:ss")
+                        text: root.date + " - " + root.time
                         font.family: "Object Sans"
                         font.pixelSize: Constants.sp(16)
                         Layout.alignment: Qt.AlignLeft
@@ -253,12 +282,12 @@ Popup {
         }
 
         MultiEffect {
-             id: blackShadow
-             anchors.fill: source
-             source: rectangleLvl2
-             shadowEnabled: true
-             shadowColor: "black"
-             opacity: 0.5
+            id: blackShadow
+            anchors.fill: source
+            source: rectangleLvl2
+            shadowEnabled: true
+            shadowColor: "black"
+            opacity: 0.5
         }
 
         Timer {

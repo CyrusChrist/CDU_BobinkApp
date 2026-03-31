@@ -12,42 +12,11 @@ Item {
 
     property alias manuelIRButton: manuelIRButton
 
-    QtObject {
-        id: internal
-
-        property int selectedEM: -1
-        property int selectedCM: -1
-
-        // Masques d'inactivité (pour configuration)
-        property int emInactiveMask: 0xFFFF
-        property var cmInactiveMasks: [
-            0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
-            0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
-            0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
-            0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF
-        ]
-
-        // Status actifs (lecture depuis PLC)
-        property int emsActive: 0x0000
-        property var cmsActive: [
-            0x0000, 0x0000, 0x0000, 0x0000,
-            0x0000, 0x0000, 0x0000, 0x0000,
-            0x0000, 0x0000, 0x0000, 0x0000,
-            0x0000, 0x0000, 0x0000, 0x0000
-        ]
-
-        // Status NotDone (lecture depuis PLC)
-        property int emsNotDone: 0x0000
-        property var cmsNotDone: [
-            0x0000, 0x0000, 0x0000, 0x0000,
-            0x0000, 0x0000, 0x0000, 0x0000,
-            0x0000, 0x0000, 0x0000, 0x0000,
-            0x0000, 0x0000, 0x0000, 0x0000
-        ]
-    }
+    property int emIndex: 4
+    property int cmInactiveMask: Constants.cmInactiveMasks[emIndex]
 
     function toggleCM(emIndex, cmIndex) {
-        var currentMask = internal.cmInactiveMasks[emIndex]
+        var currentMask = Constants.cmInactiveMasks[emIndex]
         var newMask
         var isEnabled = (currentMask & (1 << cmIndex)) === 0
         if (isEnabled) {
@@ -55,10 +24,50 @@ Item {
         } else {
             newMask = currentMask & ~(1 << cmIndex)
         }
-        opcuaNodeChauffeIRs.writeValue(Number(newMask))
-        var newMasks = internal.cmInactiveMasks.slice()
+        opcuaNodeInactiveMasks.writeValue(Number(newMask))
+        var newMasks = Constants.cmInactiveMasks.slice()
         newMasks[emIndex] = newMask
-        internal.cmInactiveMasks = newMasks
+        Constants.cmInactiveMasks = newMasks
+    }
+
+    OpcUaMonitoredNode {
+        id: opcuaNodeInactiveMasks
+        monitored: rootApp.visible
+
+        nodeId: "ns=6;s=Arp.Plc.Eclr/UN00_Modules.EM[" + root.emIndex + "].CM_InactiveMask"
+        onValueChanged: {
+            if (value !== undefined) {
+                var newMasks = Constants.cmInactiveMasks.slice()
+                newMasks[emIndex] = value
+                Constants.cmInactiveMasks = newMasks
+            }
+        }
+        onWriteCompleted: (success, message) => {
+            console.log(nodeId + ": " + message);
+        }
+    }
+
+    onCmInactiveMaskChanged: {
+        // update status for CHAUFFE IR : cmIndex = 6
+        if ((root.cmInactiveMask & (1 << 6)) === 0) {
+            checkboxChauffeIR.checked = true
+        } else {
+            checkboxChauffeIR.checked = false
+        }
+
+        // update status for CAPTEUR TENSION IR : cmIndex = 1
+        if ((root.cmInactiveMask & (1 << 1)) === 0) {
+            checkboxCapteur.checked = true
+        } else {
+            checkboxCapteur.checked = false
+        }
+
+        // update status for PREAL : cmIndex = 3
+        if ((root.cmInactiveMask & (1 << 3)) === 0) {
+            checkboxPreal.checked = true
+        } else {
+            checkboxPreal.checked = false
+        }
     }
 
     ColumnLayout {
@@ -137,6 +146,7 @@ Item {
                     border.color: (checked || manuelIRButton.checked) ? "transparent" : appTheme.bodyText
 
                     Image {
+	sourceSize: Qt.size(width, height) 
                         anchors.centerIn: parent
                         width: parent.height * 0.6
                         height: width
@@ -161,25 +171,7 @@ Item {
                     visible: !manuelIRButton.checked
                     onClicked: {
                         checkboxChauffeIR.checked = !checkboxChauffeIR.checked
-                        // opcuaNodeChauffeIRs.writeValue(checkboxChauffeIR.checked)
-                        toggleCM(4, 6)
-                    }
-
-                    OpcUaMonitoredNode {
-                        id: opcuaNodeChauffeIRs
-                        monitored: root.visible
-                        nodeId: "ns=6;s=Arp.Plc.Eclr/UN00_Modules.EM[4].CM_InactiveMask"
-                        onValueChanged: {
-                            // checkboxChauffeIR.checked = value
-                            if (value !== undefined) {
-                                var newMasks = internal.cmInactiveMasks.slice()
-                                newMasks[4] = value
-                                internal.cmInactiveMasks = newMasks
-                            }
-                        }
-                        onWriteCompleted: (success, message) => {
-                            console.log(nodeId + ": " + message);
-                        }
+                        toggleCM(root.emIndex, 6)
                     }
                 }
 
@@ -220,6 +212,7 @@ Item {
                     border.color: (checked || manuelIRButton.checked) ? "transparent" : appTheme.bodyText
 
                     Image {
+	sourceSize: Qt.size(width, height) 
                         anchors.centerIn: parent
                         width: parent.height * 0.6
                         height: width
@@ -244,16 +237,7 @@ Item {
                     visible: !manuelIRButton.checked
                     onClicked: {
                         checkboxCapteur.checked = !checkboxCapteur.checked
-                        opcuaNodeAsservissementCapteur.setValue(checkboxCapteur.checked)
-                    }
-
-                    OpcUaMonitoredNode {
-                        monitored: root.visible
-                        id: opcuaNodeAsservissementCapteur
-                        nodeId: "Arp.Plc.Eclr/enableAsservissementFoursIR"
-                        onValueChanged: {
-                            checkboxCapteur.checked = value
-                        }
+                        toggleCM(root.emIndex, 1)
                     }
                 }
 
@@ -294,6 +278,7 @@ Item {
                     border.color: (checked || manuelIRButton.checked) ? "transparent" : appTheme.bodyText
 
                     Image {
+	sourceSize: Qt.size(width, height) 
                         anchors.centerIn: parent
                         width: parent.height * 0.6
                         height: width
@@ -318,16 +303,7 @@ Item {
                     visible: !manuelIRButton.checked
                     onClicked: {
                         checkboxPreal.checked = !checkboxPreal.checked
-                        opcuaNodePreal.setValue(checkboxPreal.checked)
-                    }
-
-                    OpcUaMonitoredNode {
-                        monitored: root.visible
-                        id: opcuaNodePreal
-                        nodeId: "Arp.Plc.Eclr/chauffeIRsAutomatiqueEnable"
-                        onValueChanged: {
-                            checkboxPreal.checked = value
-                        }
+                        toggleCM(root.emIndex, 3)
                     }
                 }
 
@@ -391,7 +367,8 @@ Item {
                             unit: "°C"
                             min:0
                             max:0
-                            nodeId: "Arp.Plc.Eclr/temperaturePT100_Four1IR"
+                            offset: 0.1
+                            nodeId: "ns=6;s=Arp.Plc.Eclr/pt100Four1FourIR"
                         }
 
 
@@ -417,7 +394,8 @@ Item {
                             unit: "°C"
                             min:0
                             max:0
-                            nodeId: "Arp.Plc.Eclr/temperaturePT100_Four2IR"
+                            offset: 0.1
+                            nodeId: "ns=6;s=Arp.Plc.Eclr/pt100Four2FourIR"
                         }
 
 
@@ -857,16 +835,19 @@ Item {
                                     Layout.preferredHeight: popupIRs.height * 0.26
                                     Layout.preferredWidth: popupIRs.height * 0.26
                                     Image {
+	sourceSize: Qt.size(width, height) 
                                         source: "../Resources/Images/IR_Fond.svg"
                                         height: parent.height
                                         width: parent.height
                                     }
                                     Image {
+	sourceSize: Qt.size(width, height) 
                                         source: "../Resources/Images/IR_Off.svg"
                                         height: parent.height
                                         width: parent.height
                                     }
                                     Image {
+	sourceSize: Qt.size(width, height) 
                                         id: imgIR
                                         source: "../Resources/Images/IR_On.svg"
                                         height: parent.height
@@ -915,7 +896,6 @@ Item {
                 Rectangle {
                     Layout.preferredHeight: parent.height
                     Layout.preferredWidth: 1 * Constants.scaleFactor
-                    visible: index === 1
                     gradient: Gradient {
 
                         GradientStop {position: 0.0; color: appTheme.backgroundColor}
@@ -954,16 +934,19 @@ Item {
                                     Layout.preferredHeight: popupIRs.height * 0.26
                                     Layout.preferredWidth: popupIRs.height * 0.26
                                     Image {
+	sourceSize: Qt.size(width, height) 
                                         source: "../Resources/Images/IR_Fond.svg"
                                         height: parent.height
                                         width: parent.height
                                     }
                                     Image {
+	sourceSize: Qt.size(width, height) 
                                         source: "../Resources/Images/IR_Off.svg"
                                         height: parent.height
                                         width: parent.height
                                     }
                                     Image {
+	sourceSize: Qt.size(width, height) 
                                         id: imgIR2
                                         source: "../Resources/Images/IR_On.svg"
                                         height: parent.height

@@ -80,6 +80,7 @@ Switch {
         }
 
         Image {
+	sourceSize: Qt.size(width, height) 
             id: arrowRight
             source: rightArea.checked ? "../Images/TapisDroitWhite.svg" : "../Images/TapisGreen.svg"
             anchors.verticalCenter: parent.verticalCenter
@@ -109,6 +110,7 @@ Switch {
         }
 
         Image {
+	sourceSize: Qt.size(width, height) 
             id: arrowLeft
             source: leftArea.checked ? "../Images/TapisDroitWhite.svg" : "../Images/TapisRed.svg"
             anchors.verticalCenter: parent.verticalCenter

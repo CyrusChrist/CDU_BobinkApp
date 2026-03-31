@@ -180,14 +180,10 @@ ApplicationWindow {
 
             ColumnLayout {
                 spacing: 0
-                // anchors.centerIn: parent
-                // anchors.fill: parent
 
                 Frame {
                     id: frameMainScreen
                     padding: 0
-                    // Layout.fillHeight: true
-                    // Layout.fillWidth: true
                     background: Rectangle {
                         anchors.fill: parent
                         color: appTheme.gradientMid
@@ -234,6 +230,7 @@ ApplicationWindow {
                                     }
 
                                     Image {
+                                        sourceSize: Qt.size(width, height)
                                         id: logoImage
                                         source: "Resources/Images/BobinkLogo.svg"
                                         Layout.preferredHeight: slideMenuActive ?
@@ -489,6 +486,7 @@ ApplicationWindow {
                                     manuelOn: bobinoir.manuelBobinoirButton.checked
                                     onClicked: {
                                         stackLayoutPage.currentIndex = 6
+                                        // opcuaNodeInactiveMasks.emIndex = 7
 
                                     }
                                 }
@@ -1047,6 +1045,7 @@ ApplicationWindow {
                                         Layout.fillWidth: true
                                     }
                                     Notification { // 13
+                                        id: notificationPage
                                         Layout.fillHeight: true
                                         Layout.fillWidth: true
                                     }
@@ -1104,8 +1103,6 @@ ApplicationWindow {
                                         Layout.preferredWidth: height
                                         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
 
-                                        property int notifNumber: 0
-
                                         Button {
                                             id: notificationButton
                                             ButtonGroup.group: menuSliderButtons
@@ -1117,6 +1114,7 @@ ApplicationWindow {
                                             property bool isHovered: false
 
                                             Image {
+                                                sourceSize: Qt.size(width, height)
                                                 anchors.fill: parent
                                                 source: "Resources/Images/Notification.svg"
                                             }
@@ -1126,7 +1124,14 @@ ApplicationWindow {
                                                 height: width
                                                 radius: width / 2
                                                 anchors.centerIn: parent
-                                                color: notificationButton.checked ? "grey" : "transparent"
+                                                color: notificationButton.checked ? "grey" : notificationPage.read ? "transparent" : "#ff6659"
+
+                                                SequentialAnimation on opacity {
+                                                    running: !notificationPage.read
+                                                    loops: Animation.Infinite
+                                                    NumberAnimation { to: 0.4; duration: 650 }
+                                                    NumberAnimation { to: 1.0; duration: 650 }
+                                                }
                                             }
                                         }
 
@@ -1139,14 +1144,14 @@ ApplicationWindow {
                                             Rectangle {
                                                 anchors.fill: parent
                                                 radius: width / 2
-                                                color: "green"
+                                                color: notificationPage.numActive > 0 ? "#f44336" : "#4CAF50"
                                             }
 
                                             Text {
                                                 anchors.horizontalCenter: parent.horizontalCenter
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 anchors.verticalCenterOffset: -0.5
-                                                text: notifications.notifNumber
+                                                text: notificationPage.numActive
                                                 font.pixelSize: 14
                                                 font.bold: true
                                                 color: appTheme.bodyText
@@ -1241,7 +1246,7 @@ ApplicationWindow {
                                                     Layout.alignment: Qt.AlignHCenter
                                                     Layout.preferredHeight: frameAppBar.height * 0.65
                                                     Layout.preferredWidth: frameAppBar.height * 0.65
-                                                    nodeId: "Arp.Plc.Eclr/temperatureFour1"
+                                                    nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe1.Temperature.Four"
                                                     fontSize: Constants.sp(24)
                                                     unit: "°C"
                                                     max: 300
@@ -1285,7 +1290,7 @@ ApplicationWindow {
                                                     Layout.alignment: Qt.AlignHCenter
                                                     Layout.preferredHeight: gaugeTempFour1.width
                                                     Layout.preferredWidth: gaugeTempFour1.width
-                                                    nodeId: "Arp.Plc.Eclr/temperatureFour2"
+                                                    nodeId: "ns=6;s=Arp.Plc.Eclr/batterieDeChauffe2.Temperature.Four"
                                                     fontSize: gaugeTempFour1.fontSize
                                                     unit: "°C"
                                                     max: 300
@@ -1327,7 +1332,8 @@ ApplicationWindow {
                                                     Layout.alignment: Qt.AlignHCenter
                                                     Layout.preferredHeight: gaugeTempFour1.width
                                                     Layout.preferredWidth: gaugeTempFour1.width
-                                                    nodeId: "Arp.Plc.Eclr/temperaturePT100_Four1IR"
+                                                    offset: 0.1
+                                                    nodeId: "ns=6;s=Arp.Plc.Eclr/pt100Four1FourIR"
                                                     fontSize: gaugeTempFour1.fontSize
                                                     unit: "°C"
                                                     max: 60
@@ -1367,7 +1373,8 @@ ApplicationWindow {
                                                     Layout.alignment: Qt.AlignHCenter
                                                     Layout.preferredHeight: gaugeTempFour1.width
                                                     Layout.preferredWidth: gaugeTempFour1.width
-                                                    nodeId: "Arp.Plc.Eclr/temperaturePT100_Four2IR"
+                                                    offset: 0.1
+                                                    nodeId: "ns=6;s=Arp.Plc.Eclr/pt100Four2FourIR"
                                                     fontSize: gaugeTempFour1.fontSize
                                                     unit: "°C"
                                                     max: 60
@@ -1399,16 +1406,20 @@ ApplicationWindow {
                                         Layout.fillWidth: true
                                     }
 
-                                    // MachineState {
-                                    //     id: machineState
-                                    //     Layout.preferredHeight: frameAppBar.height * 0.5
-                                    //     Layout.preferredWidth: frameAppBar.width * 0.065
-                                    // }
                                     Button {
                                         id: mainStopButton
                                         checkable: true
                                         Layout.preferredWidth: frameAppBar.height * 0.75
                                         Layout.preferredHeight: frameAppBar.height * 0.75
+
+                                        checked: home.currentState === 9 || home.currentState === 8
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            onClicked: {
+                                                home.mainStopBtnClicked = true
+                                            }
+                                        }
 
                                         contentItem: Item {
                                             id: mainStopVisual
@@ -1422,10 +1433,6 @@ ApplicationWindow {
                                                 shadowEnabled: true
                                                 shadowColor: mainStopButton.checked ? "red" : "transparent"
                                                 shadowBlur: 2
-
-                                                // Behavior on opacity {
-                                                //     NumberAnimation { duration: 500; easing.type: Easing.InOutQuad }
-                                                // }
                                             }
 
                                             SequentialAnimation {
@@ -1452,6 +1459,7 @@ ApplicationWindow {
                                             }
 
                                             Image {
+                                                sourceSize: Qt.size(width, height)
                                                 source: mainStopButton.checked ? "Resources/Images/ButtonStopMainDown.svg" : "Resources/Images/ButtonStopMain.svg"
                                                 anchors.fill: parent
                                                 fillMode: Image.PreserveAspectFit
@@ -1467,21 +1475,6 @@ ApplicationWindow {
                                             }
                                         }
 
-                                        // onPressed: {
-                                        //     mainStopOPCUA.setValue(true)
-                                        //     console.log("DEBUG \n" + mainStopOPCUA.nodeId + " is pressed")
-                                        // }
-
-                                        // onReleased: {
-                                        //     mainStopOPCUA.setValue(false)
-                                        //     console.log("DEBUG \n" + mainStopOPCUA.nodeId + " is released")
-                                        // }
-
-                                        // OPCUANode {
-                                        //     id: mainStopOPCUA
-                                        //     nodeId: ""
-                                        // }
-
                                         background: Rectangle {
                                             color: "transparent"
                                         }
@@ -1492,16 +1485,41 @@ ApplicationWindow {
                                         Layout.fillWidth: true
                                     }
 
-                                    RowLayout {
-                                        spacing: 20
 
-                                        ModuleButton{
-                                            Layout.preferredHeight: frameAppBar.height *  0.4
-                                            Layout.preferredWidth: frameAppBar.width * 0.08
-                                            labelText: qsTr("Acquitter")
-                                            nodeId: "Arp.Plc.Eclr/acquitterTout"
+                                    ColumnLayout {
+                                        spacing: 5
+                                        Layout.alignment: Qt.AlignVCenter
+
+                                        Text {
+                                            text: "État automate :"
+                                            font.pixelSize: Constants.sp(20)
+                                            color: appTheme.bodyText
+                                            Layout.alignment: Qt.AlignLeft
+
+                                        }
+
+                                        Rectangle { Layout.preferredHeight: 2; Layout.fillWidth: true; color: "#555" }
+
+                                        Text {
+                                            text: Constants.stateNames[home.currentState]
+                                            font.pixelSize: Constants.sp(25)
+                                            font.bold: true
+                                            color: appTheme.getStateColor(home.currentState)
+                                            Layout.alignment: Qt.AlignLeft
+
                                         }
                                     }
+
+                                    // RowLayout {
+                                    //     spacing: 20
+
+                                    //     ModuleButton{
+                                    //         Layout.preferredHeight: frameAppBar.height *  0.4
+                                    //         Layout.preferredWidth: frameAppBar.width * 0.08
+                                    //         labelText: qsTr("Acquitter")
+                                    //         nodeId: "Arp.Plc.Eclr/acquitterTout"
+                                    //     }
+                                    // }
                                     Item{
                                         Layout.fillWidth: true
                                     }

@@ -153,7 +153,7 @@ Item {
                             labelText: "Redémarrer\nControleur"
                             Layout.preferredWidth: parent.width
                             Layout.preferredHeight: 60 * Constants.scaleFactor
-                            nodeId: "Arp.Plc.Eclr/rebootController"
+                            nodeId: "ns=6;s=Arp.Plc.Eclr/rebootController"
                         }
 
                         background: Rectangle {
@@ -328,13 +328,8 @@ Item {
         delegate:
             RowLayout {
                 spacing: 20 * Constants.scaleFactor
-            // id: delegate
-            // required property string text
-            // required property string namespace
-            // required property real value
-            // required property bool raz
-                Label {
 
+                Label {
                     text: qsTr(model.text)
                     horizontalAlignment: Text.AlignRight
                     verticalAlignment: Text.AlignVCenter
@@ -344,6 +339,7 @@ Item {
                     rightPadding: 8 * Constants.scaleFactor
                     font.pixelSize: consoFrameHeight * 22 / 750
                 }
+
                 NumericInput {
                     id: textFieldkW
                     readOnly: true
@@ -354,31 +350,13 @@ Item {
                     activeFocusOnPress: false
                     Layout.preferredWidth: height * 2.5
                     Layout.preferredHeight: (consoFrameHeight - 175 * Constants.scaleFactor) / consoRepeater.count
-                    // Layout.preferredHeight: width * 0.5
                     placeholderText: qsTr("kW")
                     min:0
                     max: min
-                    nodeId: model.namespace+".Valeur"
+                    nodeId: model.namespace + ".Valeur"
                     digit: 3
-                    nodeIdReset: model.namespace+".RaZ"
-                    // onNumericPartChanged: consomationElectriqueModel.setProperty(model.index,"value",value.toFixed(3))
+                    nodeIdReset: model.namespace + ".RaZ"
                 }
-
-                // OptionButton {
-                //     imgSourceBlack: "../Images/Composants/RaZ_Black.svg"
-                //     imgSourceWhite: "../Images/Composants/RaZ_White.svg"
-                //     Layout.preferredHeight: textFieldkW.height * 0.8
-                //     Layout.preferredWidth: height
-                //     onPressed: opcuaNodeRaZ.setValue(true)
-                //     onReleased: opcuaNodeRaZ.setValue(false)
-                //     inverted: true
-                // }
-
-                // OPCUANode{
-                //     id: opcuaNodeRaZ
-                //     nodeId: model.namespace+".RaZ"
-                //     onValueChanged: consomationElectriqueModel.setProperty(model.index,"RaZ",value)
-                // }
             }
     }
 
@@ -386,63 +364,46 @@ Item {
         id: consomationElectriqueModel
         ListElement {
             text: "Cantre"
-            namespace: "Arp.Plc.Eclr/compteurCantre"
+            namespace: "ns=6;s=Arp.Plc.Eclr/compteurCantre"
             value: 0.0
             RaZ: false
         }
         ListElement {
             text: "Pré-Traitement"
-            namespace: "Arp.Plc.Eclr/compteurPreTraitement"
+            namespace: "ns=6;s=Arp.Plc.Eclr/compteurPreTraitement"
             value: 0.0
             RaZ: false
         }
         ListElement {
             text: "Fours"
-            namespace: "Arp.Plc.Eclr/compteurFours"
+            namespace: "ns=6;s=Arp.Plc.Eclr/compteurFours"
             // value: 0.0
             RaZ: false
         }
         ListElement {
             text: "InfraRouge"
-            namespace: "Arp.Plc.Eclr/compteurIR"
+            namespace: "ns=6;s=Arp.Plc.Eclr/compteurFourIR"
             // value: 0.0
             RaZ: false
         }
         ListElement {
             text: "Impression"
-            namespace: "Arp.Plc.Eclr/compteurImpression"
+            namespace: "ns=6;s=Arp.Plc.Eclr/compteurImpression"
             // value: 0.0
             RaZ: false
         }
         ListElement {
             text: "Bobinoir"
-            namespace: "Arp.Plc.Eclr/compteurBobinoir"
+            namespace: "ns=6;s=Arp.Plc.Eclr/compteurBobinoir"
             // value: 0.0
             RaZ: false
         }
         ListElement {
             text: "Total"
-            namespace: "Arp.Plc.Eclr/compteurTotal"
+            namespace: "ns=6;s=Arp.Plc.Eclr/compteurTotal"
             // value: 0.0
             RaZ: false
         }
-    }
-
-
-    function razClicked(index){
-        console.log( "Raz n°" + index +": "+ true)
-        if (index === 6) {
-            for(var i=0 ; i<index +1 ; i++){
-
-                consomationElectriqueModel.setProperty(i,"value",0)
-            }
-        }
-        else {
-            consomationElectriqueModel.setProperty(index,"value",0)
-        }
-
-        console.log( "Raz n#" + index +" : "+ false)
-
     }
 
     Popup {

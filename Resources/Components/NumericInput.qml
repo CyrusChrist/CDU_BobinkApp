@@ -88,6 +88,7 @@ TextField {
                 readOnly: true
                 font.pixelSize: 24 * Constants.scaleFactor
                 text: root.numericPart + " " + root.unit
+                color: "black"
 
                 background: Rectangle {
                     implicitHeight: 60 * Constants.scaleFactor
@@ -229,9 +230,9 @@ TextField {
                                 if (!isNaN(value) && value >= root.min && value <= root.max) {
                                     // root.text = parseFloat(root.numericPart).toString() + " " + root.unit
                                     root.okChecked = true
-                                    opcuaNode.setValue(value / root.offset)
+                                    opcuaNode.writeValue(value / root.offset)
                                     if (nodeIdLinked !== "") {
-                                        opcuaLoaderLinkedId.item.setValue(value / root.offset)
+                                        opcuaLoaderLinkedId.item.writeValue(value / root.offset)
                                         console.log("Node " + root.nodeIdLinked + " a changé : " + value)
                                     }
                                     popup.close()
@@ -239,7 +240,7 @@ TextField {
                             } else if (modelData === "x") {
                                 root.numericPart = root.numericPartLast
                                 popup.close()
-                            } else if (root.replaceText === true){
+                            } else if (root.replaceText){
                                 root.numericPart = modelData
                                 root.replaceText = false
                             } else {
@@ -307,13 +308,13 @@ TextField {
         onPressed: {
             console.log("Reset du numericInput")
             if(opcuaLoaderReset.item) {
-                opcuaLoaderReset.item.setValue(true)
+                opcuaLoaderReset.item.writeValue(true)
             }
         }
 
         onReleased: {
             if(opcuaLoaderReset.item) {
-                opcuaLoaderReset.item.setValue(false)
+                opcuaLoaderReset.item.writeValue(false)
             }
         }
 

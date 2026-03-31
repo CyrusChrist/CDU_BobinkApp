@@ -132,13 +132,13 @@ Button{
     // }
     onPressed: {
         if (opcuaLoader.item) {
-            opcuaLoader.item.setValue(true)
+            opcuaLoader.item.writeValue(true)
             console.log("DEBUG\t" + button.nodeId + " is pressed")
         }
     }
     onReleased: {
         if (opcuaLoader.item) {
-            opcuaLoader.item.setValue(false)
+            opcuaLoader.item.writeValue(false)
             console.log("DEBUG\t" + button.nodeId + " is released")
         }
     }

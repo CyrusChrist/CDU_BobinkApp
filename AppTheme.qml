@@ -31,6 +31,24 @@ QtObject {
 
     property color stopButtonWhite: "transparent"
 
+    readonly property color colorWait: "#4CAF50"
+    readonly property color colorActing: "#2196F3"
+    readonly property color colorExecute: "#FF9800"
+    readonly property color colorAbort: "#f44336"
+    readonly property color colorHeld: "#9C27B0"
+    readonly property color colorSuspended: "#FF5722"
+
+    function getStateColor(state) {
+        switch(state) {
+            case 2: case 4: case 17: return appTheme.colorWait
+            case 6: return appTheme.colorExecute
+            case 9: case 8: return appTheme.colorAbort
+            case 10: case 11: case 12: return appTheme.colorHeld
+            case 5: case 13: case 14: return appTheme.colorSuspended
+            default: return appTheme.colorActing
+        }
+    }
+
     function setLightTheme() {
         currentTheme = "light"
 

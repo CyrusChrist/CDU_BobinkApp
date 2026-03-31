@@ -46,6 +46,7 @@ Button {
 
 
     Image {
+	sourceSize: Qt.size(width, height) 
         anchors.centerIn: parent
         width: fond.width - 8 * Constants.scaleFactor
         height: fond.height - 8 * Constants.scaleFactor

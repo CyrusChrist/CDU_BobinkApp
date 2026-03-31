@@ -1,7 +1,6 @@
 pragma Singleton
 
 import QtQuick
-// import QtQuick.Studio.Application
 import QtQuick.Controls
 
 QtObject {
@@ -97,7 +96,74 @@ QtObject {
         return size
     }
 
-    // property real asservBob_offset: -2
-    // property real asservBob_erreur: 1.5
-    // property real asservBob_gain: 0.2
+    readonly property var stateNames: [
+        "Undefined", "Clearing", "Stopped", "Starting", "Idle",
+        "Suspended", "Execute", "Stopping", "Aborting", "Aborted",
+        "Holding", "Held", "UnHolding", "Suspending", "UnSuspending",
+        "Resetting", "Completing", "Completed"
+    ]
+
+    readonly property var emNames: [
+        "Global", "Cantre", "Pré-Traitement", "Four 1", "Fours IR",
+        "Impression", "Four 2", "Bobinoir", "Chauffe"
+    ]
+
+    property var cmNames: {
+        var names = {}
+        names[0] = ["System", "Maitre Fours"]
+        names[1] = ["LGL"]
+        names[2] = ["Plasma", "PreTraitement", "Purge"]
+        names[3] = ["Maître Four1", "Camera", "Servo Rouleau", "Servo Dépose Fils", "Servo Tapis", "Casse Fils"]
+        names[4] = ["Maître IR", "Capteur Tension", "Servo Rouleau", "Servo PreAlimenteur", "Verins", "Casse Fils"]
+        names[5] = []
+        names[6] = ["Maître Four2", "Camera", "Servo Rouleau", "Servo Dépose Fils", "Servo Tapis", "Casse Fils"]
+        names[7] = ["Servo Bobinoir", "Servo Bobinage", "Servo Trancanage", "Capteur Vitesse", "Casse Fils"]
+        names[8] = ["Ventillations", "Chauffe"]
+        return names
+    }
+
+    property var cmImages: {
+        var src = {}
+        src[0] = ["WarningSign", "WarningSign"]
+        src[1] = ["MENU_cantre"]
+        src[2] = ["MENU_pretraitement", "MENU_pretraitement", "MENU_pretraitement"]
+        src[3] = ["MENU_four", "Camera", "MENU_four", "MENU_four", "MENU_four", "MENU_four"]
+        src[4] = ["MENU_IR", "MENU_IR", "MENU_IR", "MENU_IR", "MENU_IR", "MENU_IR"]
+        src[5] = ["WarningSign"]
+        src[6] = ["MENU_four", "Camera", "MENU_four", "MENU_four", "MENU_four", "MENU_four"]
+        src[7] = ["MENU_bobinoir", "MENU_bobinoir", "MENU_bobinoir", "MENU_bobinoir", "MENU_bobinoir"]
+        src[8] = ["MENU_four", "MENU_four"]
+        return src
+    }
+
+    property int selectedEM: -1
+    property int selectedCM: -1
+
+    // Masques d'inactivité (pour configuration)
+    property int emInactiveMask: 0xFFFF
+    property var cmInactiveMasks: [
+        0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
+        0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
+        0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
+        0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF
+    ]
+
+    // Status actifs (lecture depuis PLC)
+    property int emsActive: 0x0000
+    property var cmsActive: [
+        0x0000, 0x0000, 0x0000, 0x0000,
+        0x0000, 0x0000, 0x0000, 0x0000,
+        0x0000, 0x0000, 0x0000, 0x0000,
+        0x0000, 0x0000, 0x0000, 0x0000
+    ]
+
+    // Status NotDone (lecture depuis PLC)
+    property int emsNotDone: 0x0000
+    property var cmsNotDone: [
+        0x0000, 0x0000, 0x0000, 0x0000,
+        0x0000, 0x0000, 0x0000, 0x0000,
+        0x0000, 0x0000, 0x0000, 0x0000,
+        0x0000, 0x0000, 0x0000, 0x0000
+    ]
+
 }

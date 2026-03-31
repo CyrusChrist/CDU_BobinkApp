@@ -462,6 +462,7 @@ Item {
                         border.color: (checked || manuelBobinoirButton.checked) ? "transparent" : appTheme.bodyText
 
                         Image {
+	sourceSize: Qt.size(width, height) 
                             anchors.centerIn: parent
                             width: parent.height * 0.6
                             height: width
@@ -537,6 +538,7 @@ Item {
                         border.color: (checked || manuelBobinoirButton.checked) ? "transparent" : appTheme.bodyText
 
                         Image {
+	sourceSize: Qt.size(width, height) 
                             anchors.centerIn: parent
                             width: parent.height * 0.6
                             height: width

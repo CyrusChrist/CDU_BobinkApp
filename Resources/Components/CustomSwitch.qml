@@ -13,7 +13,7 @@ Switch {
     implicitHeight: 37.5
 
     property bool onOffText: true
-    property bool disactivated: false
+    property bool disactivated: !enabled
     property string nodeId: ""
 
     indicator: Item {
@@ -130,7 +130,7 @@ Switch {
     }
     onCheckedChanged: {
         if(opcuaLoader.item)  {
-            opcuaLoader.item.setValue(checked)
+            opcuaLoader.item.writeValue(checked)
         }
     }
     Component {

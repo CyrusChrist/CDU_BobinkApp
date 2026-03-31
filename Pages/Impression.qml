@@ -165,6 +165,7 @@ Item {
                             // }
 
                             Image {
+	sourceSize: Qt.size(width, height) 
                                 id: egout
                                 Layout.row: 4
                                 Layout.column: 1

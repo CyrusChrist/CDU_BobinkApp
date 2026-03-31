@@ -60,6 +60,7 @@ Button{
     }
 
     Image {
+	sourceSize: Qt.size(width, height) 
         id: buttonImage
 
         width: button.height * 0.75

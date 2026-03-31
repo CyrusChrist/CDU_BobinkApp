@@ -25,6 +25,7 @@ Popup {
         spacing: Math.min(root.height - (connexionErrorLogo.height + txt.height + Constants.dp(5)), Constants.dp(30))
 
         Image {
+	sourceSize: Qt.size(width, height) 
             id: connexionErrorLogo
             source: "../Images/ConnexionError.svg"
             fillMode: Image.PreserveAspectFit

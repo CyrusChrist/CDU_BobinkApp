@@ -21,6 +21,7 @@ CheckBox {
             border.color: control.checked ? "transparent" : appTheme.bodyText
 
             Image {
+	sourceSize: Qt.size(width, height) 
                 anchors.centerIn: parent
                 width: parent.height * 0.6
                 height: width

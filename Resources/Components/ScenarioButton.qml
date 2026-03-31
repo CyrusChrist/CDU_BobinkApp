@@ -21,6 +21,8 @@ Item {
     property string nodeIdReset: ""
     required property var endValue
 
+    property alias areaBtn: areaBtn
+
     onLabelTextChanged: {
         label.text = root.labelText
         button.optimalPixelSizeLabelText = button.calculateFontSize(root.labelText, button.width * 0.12 )
@@ -31,27 +33,27 @@ Item {
 
     function startScenario() {
         if (button.progressState === "Stop") {
-            opcuaLoaderExec.item.setValue(true)
-            timerMode = "Stop"
-            delay.restart()
+            opcuaLoaderExec.item.writeValue(true)
+            // timerMode = "Stop"
+            // delay.restart()
             button.progressState = "Loading"
         }
     }
 
     function stopScenario() {
         if (button.progressState === "Loading") {
-            opcuaLoaderExec.item.setValue(true)
-            timerMode = "Stop"
-            delay.restart()
+            opcuaLoaderExec.item.writeValue(false)
+            // timerMode = "Stop"
+            // delay.restart()
             button.progressState = "Stop"
 
         }
     }
 
     function resetScenario() {
-        opcuaLoaderReset.item.setValue(true)
-        timerMode = "Reset"
-        delay.restart()
+        opcuaLoaderReset.item.writeValue(true)
+        // timerMode = "Reset"
+        // delay.restart()
         button.progressState = "Stop"
     }
 
@@ -62,17 +64,17 @@ Item {
         onTriggered: {
             if (root.timerMode === "Start") {
                 console.log("Ending start scenario")
-                opcuaLoaderExec.item.setValue(false)
+                opcuaLoaderExec.item.writeValue(false)
 
             }
             else if (root.timerMode === "Stop") {
                 console.log("Ending stop scenario")
-                opcuaLoaderExec.item.setValue(false)
+                opcuaLoaderExec.item.writeValue(false)
 
             }
             else if (root.timerMode === "Reset") {
                 console.log("Ending reset scenario")
-                opcuaLoaderReset.item.setValue(false)
+                opcuaLoaderReset.item.writeValue(false)
 
             } else {
                 console.log("Timer triggered with unknown timerMode")
@@ -318,6 +320,7 @@ Item {
                     }
 
                     Image {
+	sourceSize: Qt.size(width, height) 
                         source: "../Images/Check.svg"
                         height: tripleDot.width
                         width: height
@@ -329,6 +332,7 @@ Item {
             }
 
             MouseArea {
+                id: areaBtn
                 anchors.fill: parent
                 onClicked: startScenario()
 
@@ -343,6 +347,11 @@ Item {
                     OpcUaMonitoredNode {
                         monitored: root.visible
                         nodeId: root.nodeIdExec
+                        onValueChanged: {
+                            if (!value) {
+                                stopScenario()
+                            }
+                        }
                     }
                 }
 
@@ -358,13 +367,13 @@ Item {
                         monitored: root.visible
                         nodeId: root.nodeIdEnd
                         onValueChanged: {
-                            button.endCondition1 = (value === root.endValue)
-                            // console.log("End condition 1 changed : " + button.endCondition1)
-                            if (nodeIdEnd2 === "") {
-                                if (value === root.endValue && button.progressState === "Loading") {
-                                    button.progressState = "Done"
-                                }
-                            }
+                            // button.endCondition1 = (value === root.endValue)
+                            // // console.log("End condition 1 changed : " + button.endCondition1)
+                            // if (nodeIdEnd2 === "") {
+                            //     if (value === root.endValue && button.progressState === "Loading") {
+                            //         button.progressState = "Done"
+                            //     }
+                            // }
                         }
                     }
                 }

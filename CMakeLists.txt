@@ -88,6 +88,7 @@ qt_add_qml_module(BobinkQtOpcUaHMIApp URI BobinkQtOpcUaHMIApp VERSION 1.0
               Resources/Components/MenuFrame.qml
               Resources/Components/MenuButton.qml
               Resources/Components/NotificationPopup.qml
+              Resources/Components/PowerButton.qml
 
               Resources/Images/BobinkLogo.svg
               Resources/Images/BobinkTitle.svg
@@ -130,6 +131,8 @@ qt_add_qml_module(BobinkQtOpcUaHMIApp URI BobinkQtOpcUaHMIApp VERSION 1.0
               Resources/Images/UserIngenieur.svg
               Resources/Images/UserMaintenance.svg
               Resources/Images/UserOperateur.svg
+              Resources/Images/PowerWhite.svg
+              Resources/Images/WarningSign.svg
 
               IMPORT_PATH "${CMAKE_BINARY_DIR}/deps/BobinkQtOpcUa/qml"
 )

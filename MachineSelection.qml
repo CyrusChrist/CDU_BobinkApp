@@ -72,6 +72,7 @@ Item {
             spacing: Constants.dp(20)
 
             Image {
+	sourceSize: Qt.size(width, height) 
                 id: bobinkLogo
                 source: "Resources/Images/BobinkLogo.svg"
                 Layout.preferredHeight: 150 * Constants.scaleFactor
@@ -81,6 +82,7 @@ Item {
             }
 
             Image {
+	sourceSize: Qt.size(width, height) 
                 id: bobinkTitle
                 source: "Resources/Images/BobinkTitle.svg"
                 Layout.preferredHeight: 150 * Constants.scaleFactor
@@ -125,7 +127,7 @@ Item {
                                             + mainColumn.spacing * 3
                                             + Constants.dp(50) * 2
                                             + machineColumn.spacing * (listModel.count - 1))
-                                        ) / listModel.count
+                                           ) / listModel.count
 
             ListModel {
                 id: listModel
@@ -154,6 +156,7 @@ Item {
                             anchors.fill: parent
 
                             Image {
+	sourceSize: Qt.size(width, height) 
                                 id: schemaImage
                                 source: "Resources/Images/Schema3D.svg"
                                 anchors.verticalCenter: parent.verticalCenter
@@ -247,14 +250,6 @@ Item {
             }
 
         }
-
-        // ListView {
-        //     model: QBobinkModel
-        //     delegate: ItemDelegate {
-        //         text: "Machine ID = " + machineId + " loaded !"
-        //         onClicked: root.visible = false
-        //     }
-        // }
     }
 
 }
