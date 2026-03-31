@@ -1,4 +1,4 @@
-// Main.qml — Demo app for Bobink library.
+// Demo.qml — Demo app for Bobink library.
 // Connects to an OPC UA server, then pushes NodePage for node interaction.
 
 import QtQuick
@@ -13,9 +13,14 @@ ApplicationWindow {
     height: 900
     visible: true
     title: "Bobink Demo"
+    visibility: Window.Maximized
 
     property bool autoConnectFailed: false
     property bool showPkiSettings: false
+
+    AppTheme {
+        id: appTheme
+    }
 
     Connections {
         target: Bobink
@@ -117,16 +122,31 @@ ApplicationWindow {
                     anchors.margins: 20
                     spacing: 12
 
-                    Label {
-                        text: "Discovery URL"
-                        font.bold: true
+                    RowLayout {
+
+                        Label {
+                            text: "Discovery URL"
+                            font.bold: true
+                            Layout.fillWidth: true
+                        }
+
+                        Button {
+                            text: "Hard Launch"
+                            onClicked: { stack.push("NodePage.qml", {
+                                               stackRef: stack,
+                                               pageNumber: 1,
+                                               logFunction: debugConsole.appendLog
+                                           })
+                            }
+                        }
+
                     }
 
                     RowLayout {
                         TextField {
                             id: discoveryUrlField
                             Layout.fillWidth: true
-                            text: "opc.tcp://localhost:4840"
+                            text: "opc.tcp://ThinkPad-P53:4840"
                         }
                         Button {
                             text: Bobink.discovering ? "Stop" : "Discover"
@@ -408,6 +428,7 @@ ApplicationWindow {
 
         Rectangle {
             id: debugConsole
+            visible: false
             Layout.fillWidth: true
             Layout.preferredHeight: 120
             color: "#1e1e1e"

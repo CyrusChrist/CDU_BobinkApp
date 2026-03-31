@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QtQuickControls2/qquickstyle.h>
 
 #include <QtQml/QQmlExtensionPlugin>
 Q_IMPORT_QML_PLUGIN (BobinkPlugin)
@@ -67,18 +68,21 @@ logHandler (QtMsgType type, const QMessageLogContext &ctx, const QString &msg)
 int
 main (int argc, char *argv[])
 {
-  // Load the locally-built OpcUa backend plugin (open62541).
+
+    // Load the locally-built OpcUa backend plugin (open62541).
   QCoreApplication::addLibraryPath (QStringLiteral (QTOPCUA_PLUGIN_PATH));
 
   qInstallMessageHandler (logHandler);
 
   QGuiApplication app (argc, argv);
+  QQuickStyle::setStyle("Basic");
 
   QQmlApplicationEngine engine;
   QObject::connect (
       &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
       [] () { QCoreApplication::exit (1); }, Qt::QueuedConnection);
 
-  engine.loadFromModule ("BobinkQtOpcUaAppTemplate", "Main");
+  // engine.loadFromModule ("BobinkQtOpcUaHMIApp", "Main");
+  engine.loadFromModule ("BobinkQtOpcUaHMIApp", "App");
   return app.exec ();
 }

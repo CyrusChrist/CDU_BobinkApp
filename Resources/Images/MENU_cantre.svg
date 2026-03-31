@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="CANTRE" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41 40">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2, .cls-3, .cls-4 {
+        fill: none;
+        stroke: #fff;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-3 {
+        stroke-width: 2px;
+      }
+
+      .cls-4 {
+        stroke-width: 2.02px;
+      }
+    </style>
+  </defs>
+  <g>
+    <path class="cls-4" d="M5.98,4.3c-1.63,0-2.95,7.16-2.95,16s1.32,16,2.95,16"/>
+    <line class="cls-4" x1="24.17" y1="8.51" x2="5.85" y2="4.3"/>
+    <line class="cls-4" x1="24.17" y1="32.19" x2="5.75" y2="36.3"/>
+    <ellipse class="cls-4" cx="23.98" cy="20.3" rx="1.96" ry="11.89"/>
+    <ellipse class="cls-2" cx="23.99" cy="20.49" rx=".1" ry="2.1"/>
+    <path class="cls-1" d="M12.16,8.41c-2.65,4.79-3.29,10.45-3.71,15.85,0,0-.11,0-.11,0-.1-4.19-.35-13.82,3.82-15.85h0Z"/>
+  </g>
+  <g>
+    <line class="cls-3" x1="28.59" y1="20.8" x2="34.1" y2="20.8"/>
+    <polygon class="cls-1" points="33.63 17.27 33.63 24.32 37.15 20.8 33.63 17.27"/>
+  </g>
+</svg>
