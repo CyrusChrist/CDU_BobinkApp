@@ -18,6 +18,10 @@ Item {
     property alias repeaterVentilation: repeaterVentilation
     /////////////////////
 
+    OpcUaMonitoredNode { id: nodeVitesseVentilationFour1; nodeId: "ns=6;s=Arp.Plc.Eclr/variateurFour1.Cmd.Velo"; monitored: root.visible }
+    OpcUaMonitoredNode { id: nodeVitesseVentilationFour2; nodeId: "ns=6;s=Arp.Plc.Eclr/variateurFour2.Cmd.Velo"; monitored: root.visible }
+    OpcUaMonitoredNode { id: nodeVitesseVentilationExtractions; nodeId: "ns=6;s=Arp.Plc.Eclr/variateurExtraction.Cmd.Velo"; monitored: root.visible }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: Constants.dp(10)

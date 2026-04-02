@@ -18,6 +18,8 @@ Popup {
     property string cm
     property string date: ""
     property string time: ""
+    property bool autoClose: false
+    property string srcImg: ""
 
     modal: importance === 1
     focus: importance === 1
@@ -36,7 +38,7 @@ Popup {
         color: "black"
     }
 
-    onOpened: importance === 1 ? null : closeTimer.restart()
+    onOpened: autoClose ? closeTimer.restart() : null
 
     enter: Transition {
         NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 250 }
@@ -108,7 +110,7 @@ Popup {
                                 color: "white"
                                 text: Constants.emNames[root.em] + " | " + Constants.cmNames[root.em][root.cm]
                                 font.family: "Object Sans"
-                                font.pixelSize: Constants.sp(18)
+                                font.pixelSize: Constants.sp(24)
                                 Layout.alignment: Qt.AlignLeft
                             }
 
@@ -148,34 +150,73 @@ Popup {
 
                         Item {Layout.fillHeight: true}
 
-                        Button {
-                            Layout.preferredHeight: 90 * Constants.scaleFactor
-                            Layout.preferredWidth: 210 * Constants.scaleFactor
+                        RowLayout {
+                            Layout.fillWidth: true
                             Layout.alignment: Qt.AlignHCenter
+                            spacing: Constants.dp(35)
 
-                            onClicked: root.close()
+                            Button {
+                                id: redirectBtn
+                                Layout.preferredHeight: 90 * Constants.scaleFactor
+                                Layout.preferredWidth: 210 * Constants.scaleFactor
+                                Layout.alignment: Qt.AlignHCenter
 
-                            contentItem: Text {
-                                color: "white"
-                                text: "FERMER"
-                                font.pixelSize: 25 * Constants.scaleFactor
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                                anchors.centerIn: parent
-                                font.bold: true
-                                font.family: "Object Sans"
+                                onClicked: {
+                                    stackLayoutPage.currentIndex = 13
+                                    root.close()
+                                }
 
+                                contentItem: Text {
+                                    color: "white"
+                                    text: "VOIR"
+                                    font.pixelSize: 25 * Constants.scaleFactor
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    anchors.centerIn: parent
+                                    font.bold: true
+                                    font.family: "Object Sans"
+
+                                }
+
+                                background: Rectangle {
+                                    anchors.fill: parent
+                                    radius: 20 * Constants.scaleFactor
+                                    color: appTheme.backgroundColor
+                                    border.color: "white"
+                                    border.width: 2 * Constants.scaleFactor
+                                }
                             }
 
-                            background: Rectangle {
-                                anchors.fill: parent
-                                radius: 20 * Constants.scaleFactor
-                                color: appTheme.backgroundColor
-                                border.color: "white"
-                                border.width: 2 * Constants.scaleFactor
+
+                            Button {
+                                id: closeBtn
+                                Layout.preferredHeight: 90 * Constants.scaleFactor
+                                Layout.preferredWidth: 210 * Constants.scaleFactor
+                                Layout.alignment: Qt.AlignHCenter
+
+                                onClicked: root.close()
+
+                                contentItem: Text {
+                                    color: "white"
+                                    text: "FERMER"
+                                    font.pixelSize: 25 * Constants.scaleFactor
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    anchors.centerIn: parent
+                                    font.bold: true
+                                    font.family: "Object Sans"
+
+                                }
+
+                                background: Rectangle {
+                                    anchors.fill: parent
+                                    radius: 20 * Constants.scaleFactor
+                                    color: appTheme.backgroundColor
+                                    border.color: "white"
+                                    border.width: 2 * Constants.scaleFactor
+                                }
                             }
                         }
-
                     }
                 }
 
@@ -228,9 +269,15 @@ Popup {
                         anchors.centerIn: parent
                         height: parent.height * 0.65
                         width: height
-                        source: !isNaN(root.em) && !isNaN(root.cm) ?
-                                    "../Images/" + Constants.cmImages[root.em][root.cm] + ".svg" :
-                                    "../Images/Info.svg"
+                        source: {
+                            if (root.srcImg !== "") {
+                                return root.srcImg
+                            } else if (!isNaN(root.em) && !isNaN(root.cm)) {
+                                return "../Images/" + Constants.cmImages[root.em][root.cm] + ".svg"
+                            } else {
+                                return "../Images/Info.svg"
+                            }
+                        }
                         fillMode: Image.PreserveAspectCrop
                     }
                 }

@@ -43,8 +43,8 @@ Item {
             }
         }
         onWriteCompleted: (success, message) => {
-            console.log(nodeId + ": " + message);
-        }
+                              console.log(nodeId + ": " + message);
+                          }
     }
 
     onCmInactiveMaskChanged: {
@@ -146,7 +146,7 @@ Item {
                     border.color: (checked || manuelPreTraitementButton.checked) ? "transparent" : appTheme.bodyText
 
                     Image {
-	sourceSize: Qt.size(width, height)
+                        sourceSize: Qt.size(width, height)
                         anchors.centerIn: parent
                         width: parent.height * 0.6
                         height: width
@@ -187,7 +187,7 @@ Item {
                 Layout.column: 2
                 Layout.alignment: Qt.AlignTop
 
-               shadowColor: manuelPreTraitementButton.checked ? "#deae2a" : checkboxSpraying.checked ? "#35a646" : "black"
+                shadowColor: manuelPreTraitementButton.checked ? "#deae2a" : checkboxSpraying.checked ? "#35a646" : "black"
 
                 Label {
                     text: "Spraying"
@@ -213,7 +213,7 @@ Item {
                     border.color: (checked || manuelPreTraitementButton.checked) ? "transparent" : appTheme.bodyText
 
                     Image {
-	sourceSize: Qt.size(width, height)
+                        sourceSize: Qt.size(width, height)
                         anchors.centerIn: parent
                         width: parent.height * 0.6
                         height: width
@@ -539,9 +539,38 @@ Item {
                                 Layout.alignment: Qt.AlignRight | Qt.AlignBottom
                                 Layout.preferredWidth: implicitWidth * 1.33 * Constants.scaleFactor
                                 Layout.preferredHeight: implicitHeight * 1.33 * Constants.scaleFactor
-                                checked: !!value
-                                onClicked: {
-                                    opcuaNodePlasmaNozzle.writeValue(checked)
+                                checked: listModelPlasmaNozzleSelection.get(index).value
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    property bool checked: parent.checked
+                                    onClicked: {
+                                        plasmaSelector(!checked)
+                                    }
+                                }
+                            }
+
+                            function plasmaSelector(value) {
+                                if (!value) {
+                                    let n = 0
+                                    for (var i=0; i < listModelPlasmaNozzleSelection.count; i++) {
+                                        if (listModelPlasmaNozzleSelection.get(i).value) {
+                                            n++
+                                        }
+                                    }
+                                    if (n <= 2) {
+                                        notificationPopup.text = "Minimum 2 buses plasma"
+                                        notificationPopup.subText = ""
+                                        notificationPopup.importance = 2
+                                        notificationPopup.warningColor = "#555"
+                                        notificationPopup.open()
+                                    } else {
+                                        listModelPlasmaNozzleSelection.setProperty(index,"value",value)
+                                        opcuaNodePlasmaNozzle.writeValue(value)
+                                    }
+                                } else {
+                                    listModelPlasmaNozzleSelection.setProperty(index,"value",value)
+                                    opcuaNodePlasmaNozzle.writeValue(value)
                                 }
                             }
 

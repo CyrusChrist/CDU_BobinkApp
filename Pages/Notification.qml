@@ -105,7 +105,18 @@ Item {
 
     property int blockingEvents: 0
 
-    onBlockingEventsChanged: console.log("Nb d'erreurs bloquantes : " + blockingEvents)
+    onBlockingEventsChanged: {
+        console.log("Nb d'erreurs bloquantes : " + blockingEvents)
+
+        // State = aborted
+        if (home.currentState === 9 && blockingEvents === 0) {
+            notificationPopup.text = "Réarmer la machine"
+            notificationPopup.subText = "Erreurs fixées"
+            notificationPopup.importance = 1
+            notificationPopup.warningColor = "green"
+            notificationPopup.open()
+        }
+    }
 
     function getBlockingEvents() {
         var k = 0
@@ -342,11 +353,13 @@ Item {
                                 onPressed: {
                                     console.log("Event ID : " + notifDelegate.evtID + " Trying to acquitter : " + root.acquitterEvent[notifDelegate.evtID][notifDelegate.em])
                                     nodeIDAcquitter.writeValue(true)
-                                    acquitterDelay.start()
                                     nodeCmdResetFirstOut.writeValue(true)
+                                    acquitterDelay.start()
                                 }
 
-                                onReleased: nodeIDAcquitter.writeValue(false)
+                                onReleased: {
+                                    nodeIDAcquitter.writeValue(false)
+                                }
 
                                 OpcUaMonitoredNode {
                                     id: nodeIDAcquitter;

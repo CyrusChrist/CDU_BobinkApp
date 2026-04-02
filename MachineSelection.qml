@@ -72,7 +72,7 @@ Item {
             spacing: Constants.dp(20)
 
             Image {
-	sourceSize: Qt.size(width, height) 
+                sourceSize: Qt.size(width, height)
                 id: bobinkLogo
                 source: "Resources/Images/BobinkLogo.svg"
                 Layout.preferredHeight: 150 * Constants.scaleFactor
@@ -82,7 +82,7 @@ Item {
             }
 
             Image {
-	sourceSize: Qt.size(width, height) 
+                sourceSize: Qt.size(width, height)
                 id: bobinkTitle
                 source: "Resources/Images/BobinkTitle.svg"
                 Layout.preferredHeight: 150 * Constants.scaleFactor
@@ -156,7 +156,7 @@ Item {
                             anchors.fill: parent
 
                             Image {
-	sourceSize: Qt.size(width, height) 
+                                sourceSize: Qt.size(width, height)
                                 id: schemaImage
                                 source: "Resources/Images/Schema3D.svg"
                                 anchors.verticalCenter: parent.verticalCenter

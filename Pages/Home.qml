@@ -56,6 +56,7 @@ Item {
                 notificationPopup.warningColor = "#555"
                 notificationPopup.text = "Remplir le four"
                 notificationPopup.subText = "Pour terminer le resetting"
+                notificationPopup.srcImg = "../Images/Info.svg"
                 notificationPopup.importance = 2
                 notificationPopup.em = null
                 notificationPopup.open()
@@ -66,6 +67,7 @@ Item {
             notificationPopup.warningColor = "green"
             notificationPopup.text = "Prêt à démarrer"
             notificationPopup.subText = "Resetting done"
+            notificationPopup.srcImg = "../Images/Check.svg"
             notificationPopup.importance = 2
             notificationPopup.em = null
             notificationPopup.open()
@@ -81,6 +83,7 @@ Item {
         notificationPopup.warningColor = "#555"
         notificationPopup.text = "Machine pleine"
         notificationPopup.subText = "Resetting en cours..."
+        notificationPopup.srcImg = "../Images/Info.svg"
         notificationPopup.importance = 2
         notificationPopup.open()
         resetDelay.k = 0
@@ -93,18 +96,24 @@ Item {
         property int k: 0
         onTriggered: {
             if (_item.currentState === 15) {
-                if (k === 2) {
-                    k = 0
+                if (k === 3) {
+                    notificationPopup.warningColor = "#FFF100"
+                    notificationPopup.text = "Components not done, can't reset"
+                    notificationPopup.subText = getNotDone()
+                    notificationPopup.importance = 2
+                    notificationPopup.srcImg = "../Images/WarningSign.svg"
+                    notificationPopup.open()
                 }
-                if (k === 0) {
+
+                if (k % 2 === 0) {
                     console.log("Trying to end resetting")
                     writeNode(node_jogDeposeF1, true)
-                    k = 1
+                    k++
                     resetDelay.start()
-                } else if (k === 1) {
+                } else if (k % 2 === 1) {
                     console.log("Resetting not done, trying again")
                     writeNode(nodeFour1Done, true)
-                    k = 2
+                    k++
                     resetDelay.start()
                 }
 
@@ -114,13 +123,13 @@ Item {
 
     function onPlayPauseChecked(btn) {
         let isControlButton = (
-            btn === switchStartStopPreTraitement ||
-            btn === switchStartStopImpressionFour2 ||
-            btn === switchStartStopBobibnoir ||
-            btn === playPauseButton ||
-            btn === mainStopButton ||
-            btn === powerButton
-        );
+                btn === switchStartStopPreTraitement ||
+                btn === switchStartStopImpressionFour2 ||
+                btn === switchStartStopBobibnoir ||
+                btn === playPauseButton ||
+                btn === mainStopButton ||
+                btn === powerButton
+                );
 
         if (isControlButton) {
             notificationPage.blockingEvents = notificationPage.getBlockingEvents()
@@ -316,8 +325,8 @@ Item {
             }
         }
         onWriteCompleted: (success, message) => {
-            console.log(nodeId + ": " + message);
-        }
+                              console.log(nodeId + ": " + message);
+                          }
     }
 
     OpcUaMonitoredNode {
@@ -332,7 +341,28 @@ Item {
             }
         }
         onWriteCompleted: (success, message) => {
-            console.log(nodeId + ": " + message);
+                              console.log(nodeId + ": " + message);
+                          }
+    }
+
+    Repeater {
+        id: opcuaNodeCMsNotDoneMasks
+        model: 9
+        delegate: Item {
+            OpcUaMonitoredNode {
+                monitored: true
+                nodeId: "ns=6;s=Arp.Plc.Eclr/UN00_Modules.EM[" + index + "].CMs_NotDone"
+                onValueChanged: {
+                    if (value !== undefined) {
+                        var newMasks = Constants.cmsNotDone.slice()
+                        newMasks[index] = value
+                        Constants.cmsNotDone = newMasks
+                    }
+                }
+                onWriteCompleted: (success, message) => {
+                                      console.log(nodeId + ": " + message);
+                                  }
+            }
         }
     }
 
@@ -341,7 +371,6 @@ Item {
 
     onCmInactiveMaskIRChanged: {
         // update status for CHAUFFE IR : emIndex = 4; cmIndex = 6
-        console.log("Changement IR")
         if ((_item.cmInactiveMaskIR & (1 << 6)) === 0) {
             switchStartIR.checked = true
         } else {
@@ -364,6 +393,38 @@ Item {
         } else {
             switchPlasmaPreTraitement.checked = false
         }
+    }
+
+    property var cmNotDoneMasks: Constants.cmsNotDone
+
+    function getNotDone() {
+        let notDone = ""
+        for (var i=0; i < 4; i++) {
+            let cmNotDoneMask = cmNotDoneMasks[i]
+            let k = []
+            for (var j=0; j < 16; j++) {
+                if (((cmNotDoneMask & (1 << j)) !== 0)) {
+                    k.push(j)
+                }
+            }
+
+            if (k.length > 0) {
+                if (notDone.length === 0) {
+                    notDone = Constants.emNames[i] + " : "
+                } else {
+                    notDone = notDone + " | " + Constants.emNames[i] + " : "
+                }
+
+                for (var l = 0; l < k.length; l++) {
+                    if (l > 0) {
+                        notDone = notDone + ", " + Constants.cmNames[i][k[l]]
+                    } else {
+                        notDone = notDone + Constants.cmNames[i][k[l]]
+                    }
+                }
+            }
+        }
+        return notDone
     }
 
     ColumnLayout {
@@ -1109,7 +1170,7 @@ Item {
                                     transformOrigin: Item.Center
 
                                     Image {
-	sourceSize: Qt.size(width, height)
+                                        sourceSize: Qt.size(width, height)
                                         id: playPauseIcon
                                         anchors.fill: parent
                                         fillMode: Image.PreserveAspectFit
