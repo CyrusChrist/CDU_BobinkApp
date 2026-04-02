@@ -1144,7 +1144,8 @@ ApplicationWindow {
                                             Rectangle {
                                                 anchors.fill: parent
                                                 radius: width / 2
-                                                color: notificationPage.numActive > 0 ? "#f44336" : "#4CAF50"
+                                                color: notificationPage.numActive > 0 ?
+                                                           notificationPage.blockingEvents > 0 ? "#f44336" : "#fabd05" : "#4CAF50"
                                             }
 
                                             Text {

@@ -14,15 +14,11 @@ Item {
 
     property int angle: 0
     property bool checked: false
-
-    // onCheckedChanged: if (!checked) {
-    //                       area.checked = false
-    //                       glowCircle.height = parent.height * 0.3
-    //                       glowCircle.width = parent.width * 0.3
-    //                   }
+    property bool isGlowing: true
 
     Rectangle {
         id: glowCircle
+        visible: root.isGlowing
 
         anchors.centerIn: area.checked ? parent : null
 
@@ -81,7 +77,7 @@ Item {
     MultiEffect {
         anchors.fill: source
         source: glowCircle
-        shadowEnabled: true
+        shadowEnabled: root.isGlowing
         shadowColor: "white"
         blurMax: 40
         shadowBlur: 1
@@ -116,7 +112,7 @@ Item {
         }
 
         Image {
-	sourceSize: Qt.size(width, height)
+            sourceSize: Qt.size(width, height)
             anchors.centerIn: parent
             width: parent.width * 0.6
             height: parent.height * 0.65
@@ -135,6 +131,12 @@ Item {
         onClicked: {
             checkPositionAnimation.start()
             checked = true
+        }
+
+        onCheckedChanged: {
+            if (!checked) {
+                angleAnimation.running = true
+            }
         }
 
         transitions: Transition {

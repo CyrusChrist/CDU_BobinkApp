@@ -312,6 +312,44 @@ Item {
                     Layout.fillHeight: true
                 }
             }
+
+            StyledFrame {
+                id: frameStopHorsTension
+                style: "shadowed"
+
+                property bool poweringOn: home.currentState === 2
+
+                GroupBox {
+                    contentItem: ColumnLayout {
+                        spacing: Constants.spacing * 1.5
+
+                        Label {
+                            text: frameStopHorsTension.poweringOn ? "Mise sous tension" : "Mettre hors tension"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            font.bold: true
+                            font.pixelSize: 25 * Constants.scaleFactor
+                            color: appTheme.bodyText
+                        }
+
+                        PowerButton {
+                            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                            isGlowing: frameStopHorsTension.poweringOn
+
+                            onCheckedChanged: {
+                                if (checked) {
+                                    home.onPlayPauseChecked(home.powerButton)
+                                }
+                            }
+                        }
+                    }
+
+                    background: Rectangle {
+                        color: "transparent"
+                    }
+                }
+            }
+
         }
 
         Item {

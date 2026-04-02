@@ -25,7 +25,7 @@ Popup {
     focus: importance === 1
     closePolicy: Popup.NoAutoClose
     height: importance === 1 ? parent.height : Constants.dp(100)
-    width: importance === 1 ? parent.width : Constants.dp(400)
+    width: importance === 1 ? parent.width : Math.max(Constants.dp(400), subTextLvl2.width + lvlImg.width + Constants.dp(40) )
     padding: 0
 
     x: importance === 1 ? 0 : parent.width - width - Constants.dp(10)
@@ -255,6 +255,7 @@ Popup {
                 spacing: Constants.dp(10)
 
                 Rectangle {
+                    id: lvlImg
                     Layout.leftMargin: Constants.dp(10)
                     Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
                     Layout.preferredHeight: parent.height * 0.8
@@ -312,6 +313,7 @@ Popup {
                         }
 
                         Label {
+                            id: subTextLvl2
                             Layout.alignment: Qt.AlignLeft
                             color: appTheme.bodyText
                             font.pixelSize: Constants.sp(16)

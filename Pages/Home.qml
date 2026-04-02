@@ -24,6 +24,7 @@ Item {
     property alias btnIR: btnIR
     property alias btnFour2: btnFour2
     property alias btnBobinoir: btnBob
+    property alias powerButton: powerButton
 
     property alias automaticModeScrollView: automaticModeScrollView
 
@@ -55,7 +56,7 @@ Item {
             } else {
                 notificationPopup.warningColor = "#555"
                 notificationPopup.text = "Remplir le four"
-                notificationPopup.subText = "Pour terminer le resetting"
+                notificationPopup.subText = "Pour terminer le démarrage"
                 notificationPopup.srcImg = "../Images/Info.svg"
                 notificationPopup.importance = 2
                 notificationPopup.em = null
@@ -66,7 +67,7 @@ Item {
         if (currentState === 4) {
             notificationPopup.warningColor = "green"
             notificationPopup.text = "Prêt à démarrer"
-            notificationPopup.subText = "Resetting done"
+            notificationPopup.subText = "Machine mise sous tension"
             notificationPopup.srcImg = "../Images/Check.svg"
             notificationPopup.importance = 2
             notificationPopup.em = null
@@ -80,25 +81,26 @@ Item {
     }
 
     function reset() {
-        notificationPopup.warningColor = "#555"
-        notificationPopup.text = "Machine pleine"
-        notificationPopup.subText = "Resetting en cours..."
-        notificationPopup.srcImg = "../Images/Info.svg"
-        notificationPopup.importance = 2
-        notificationPopup.open()
         resetDelay.k = 0
         resetDelay.start()
     }
 
     Timer {
         id: resetDelay
-        interval: [0, 1].includes(k) ? 1000 : 5000
+        interval: [0, 1].includes(k) ? 2000 : 5000
         property int k: 0
         onTriggered: {
-            if (_item.currentState === 15) {
-                if (k === 3) {
+            if (_item.currentState === 15 && nodeFour1Plein.value) {
+                if (k === 0) {
+                    notificationPopup.warningColor = "#555"
+                    notificationPopup.text = "Machine pleine"
+                    notificationPopup.subText = "Mise sous tension des composants..."
+                    notificationPopup.srcImg = "../Images/Info.svg"
+                    notificationPopup.importance = 2
+                    notificationPopup.open()
+                } else if (k === 3) {
                     notificationPopup.warningColor = "#FFF100"
-                    notificationPopup.text = "Components not done, can't reset"
+                    notificationPopup.text = "Mise sous tension inachevée"
                     notificationPopup.subText = getNotDone()
                     notificationPopup.importance = 2
                     notificationPopup.srcImg = "../Images/WarningSign.svg"
@@ -116,6 +118,15 @@ Item {
                     k++
                     resetDelay.start()
                 }
+
+            } else if (_item.currentState === 15) {
+                notificationPopup.warningColor = "#555"
+                notificationPopup.text = "Remplir le four"
+                notificationPopup.subText = "Pour terminer le démarrage"
+                notificationPopup.srcImg = "../Images/Info.svg"
+                notificationPopup.importance = 2
+                notificationPopup.em = null
+                notificationPopup.open()
 
             }
         }
@@ -201,9 +212,15 @@ Item {
                     writeNode(nodeCmdReset, true)
                 }
                 // currentState != [8, 9, 1, 7, 2] --> Stop
-                if ([3,4,5,6,10,11,12,13,14,15,16,17].includes(_item.currentState)) {
+                else if ([3,4,5,6,10,11,12,13,14,15,16,17].includes(_item.currentState)) {
                     console.log("==== STOP ====")
                     writeNode(nodeCmdStop, true)
+                } else {
+                    notificationPopup.warningColor = "#FFF100"
+                    notificationPopup.importance = 2
+                    notificationPopup.text = "Commande impossible"
+                    notificationPopup.subText = "État actuel de l'automate invalide : " + Constants.stateNames[_item.currentState]
+                    notificationPopup.open()
                 }
             }
         }
@@ -741,7 +758,7 @@ Item {
 
                     Text {
                         Layout.fillWidth: true
-                        text: qsTr("Machine à l'arrêt")
+                        text: qsTr("Machine en veille")
                         font.pixelSize: Constants.sp(30)
                         horizontalAlignment: Text.AlignHCenter
                         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
@@ -750,7 +767,7 @@ Item {
 
                     Text {
                         Layout.fillWidth: true
-                        text: qsTr("Démarrer")
+                        text: qsTr("Mettre sous tension")
                         font.pixelSize: Constants.sp(28)
                         horizontalAlignment: Text.AlignHCenter
                         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter

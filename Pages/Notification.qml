@@ -202,6 +202,7 @@ Item {
 
                         property var stampDate: {
                             if (index >= 0) {
+                                root.blockingEvents = root.getBlockingEvents()
                                 let stamp = notifDelegate.timeStamp
                                 var date = {}
                                 date[0] = stamp.slice(8, 13)
