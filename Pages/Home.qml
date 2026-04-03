@@ -54,24 +54,16 @@ Item {
             if (nodeFour1Plein.value) {
                 reset()
             } else {
-                notificationPopup.warningColor = "#555"
-                notificationPopup.text = "Remplir le four"
-                notificationPopup.subText = "Pour terminer le démarrage"
-                notificationPopup.srcImg = "../Images/Info.svg"
-                notificationPopup.importance = 2
-                notificationPopup.em = null
-                notificationPopup.open()
+                rootApp.openNewNotif(2, "Remplir le four",
+                                            "Pour terminer le démarrage",
+                                            "Info", "#555", false)
             }
         }
 
         if (currentState === 4) {
-            notificationPopup.warningColor = "green"
-            notificationPopup.text = "Prêt à démarrer"
-            notificationPopup.subText = "Machine mise sous tension"
-            notificationPopup.srcImg = "../Images/Check.svg"
-            notificationPopup.importance = 2
-            notificationPopup.em = null
-            notificationPopup.open()
+            rootApp.openNewNotif(2, "Prêt à démarrer",
+                                        "Machine mise sous tension",
+                                        "Check", "green", false)
         }
     }
 
@@ -92,19 +84,13 @@ Item {
         onTriggered: {
             if (_item.currentState === 15 && nodeFour1Plein.value) {
                 if (k === 0) {
-                    notificationPopup.warningColor = "#555"
-                    notificationPopup.text = "Machine pleine"
-                    notificationPopup.subText = "Mise sous tension des composants..."
-                    notificationPopup.srcImg = "../Images/Info.svg"
-                    notificationPopup.importance = 2
-                    notificationPopup.open()
+                    rootApp.openNewNotif(2, "Machine pleine",
+                                         "Mise sous tension des composants...",
+                                         "Info", "#555", false)
                 } else if (k === 3) {
-                    notificationPopup.warningColor = "#FFF100"
-                    notificationPopup.text = "Mise sous tension inachevée"
-                    notificationPopup.subText = getNotDone()
-                    notificationPopup.importance = 2
-                    notificationPopup.srcImg = "../Images/WarningSign.svg"
-                    notificationPopup.open()
+                    rootApp.openNewNotif(2, "Mise sous tension inachevéee",
+                                         getNotDone(),
+                                         "WarningSign", "#FFF100", false)
                 }
 
                 if (k % 2 === 0) {
@@ -120,13 +106,9 @@ Item {
                 }
 
             } else if (_item.currentState === 15) {
-                notificationPopup.warningColor = "#555"
-                notificationPopup.text = "Remplir le four"
-                notificationPopup.subText = "Pour terminer le démarrage"
-                notificationPopup.srcImg = "../Images/Info.svg"
-                notificationPopup.importance = 2
-                notificationPopup.em = null
-                notificationPopup.open()
+                rootApp.openNewNotif(2, "Remplir le four",
+                                     "Pour terminer le démarrage",
+                                     "Info", "#555", false)
 
             }
         }
@@ -146,11 +128,9 @@ Item {
             notificationPage.blockingEvents = notificationPage.getBlockingEvents()
             // ====== BTN = PLAYPAUSE ou IMPRESSION ou BOBINOIR ======
             if (btn === playPauseButton | btn === switchStartStopImpressionFour2 | btn === switchStartStopBobibnoir) {
-                notificationPopup.warningColor = "#FFF100"
-                notificationPopup.importance = 2
-                notificationPopup.text = "Commande impossible"
-                notificationPopup.subText = "IHM limité à la partie 1"
-                notificationPopup.open()
+                rootApp.openNewNotif(2, "Commande impossible",
+                                     "IHM limité à la partie 1",
+                                     "Info", "#FFF100", true)
             }
             // ====== BTN = PRETRAIT ======
             else if (btn === switchStartStopPreTraitement) {
@@ -178,11 +158,9 @@ Item {
                     console.log("==== HOLD ====")
                     writeNode(nodeCmdHold, true)
                 } else {
-                    notificationPopup.warningColor = "#FFF100"
-                    notificationPopup.importance = 2
-                    notificationPopup.text = "Commande impossible"
-                    notificationPopup.subText = "État actuel de l'automate invalide : " + Constants.stateNames[_item.currentState]
-                    notificationPopup.open()
+                    rootApp.openNewNotif(2, "Commande impossible",
+                                                "État actuel de l'automate invalide : " + Constants.stateNames[_item.currentState],
+                                                "Info", "#FFF100", true)
                 }
             }
             // ====== BTN = MAINSTOP ======
@@ -197,11 +175,9 @@ Item {
                     console.log("==== CLEAR ====")
                     writeNode(nodeCmdClear, true)
                 } else {
-                    notificationPopup.warningColor = "#FFF100"
-                    notificationPopup.importance = 2
-                    notificationPopup.text = "Commande impossible"
-                    notificationPopup.subText = "État actuel de l'automate invalide : " + Constants.stateNames[_item.currentState]
-                    notificationPopup.open()
+                    notificationPopup.openNotif(2, "Commande impossible",
+                                                "État actuel de l'automate invalide : " + Constants.stateNames[_item.currentState],
+                                                "Info", "#FFF100", true)
                 }
             }
             // ====== BTN = POWER ======
@@ -216,11 +192,9 @@ Item {
                     console.log("==== STOP ====")
                     writeNode(nodeCmdStop, true)
                 } else {
-                    notificationPopup.warningColor = "#FFF100"
-                    notificationPopup.importance = 2
-                    notificationPopup.text = "Commande impossible"
-                    notificationPopup.subText = "État actuel de l'automate invalide : " + Constants.stateNames[_item.currentState]
-                    notificationPopup.open()
+                    notificationPopup.openNotif(2, "Commande impossible",
+                                                "État actuel de l'automate invalide : " + Constants.stateNames[_item.currentState],
+                                                "Info", "#FFF100", true)
                 }
             }
         }

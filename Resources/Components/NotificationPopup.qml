@@ -14,12 +14,13 @@ Popup {
     property string text: "Message d'erreur"
     property string subText: "Description"
     property int importance: 1
-    property string em
-    property string cm
+    property int em: 0
+    property int cm: 0
     property string date: ""
     property string time: ""
     property bool autoClose: false
     property string srcImg: ""
+    property int notifIndex: 0
 
     modal: importance === 1
     focus: importance === 1
@@ -29,7 +30,11 @@ Popup {
     padding: 0
 
     x: importance === 1 ? 0 : parent.width - width - Constants.dp(10)
-    y: importance === 1 ? 0 : parent.height - parent.height * 0.15 - height - Constants.dp(10)
+    y: importance === 1 ? 0 : parent.height - parent.height * 0.15 - height - Constants.dp(10) - notifIndex * (height + 8)
+
+    Behavior on y {
+        NumberAnimation {duration: 200}
+    }
 
     background: Rectangle {
         visible: root.importance === 1
@@ -39,6 +44,8 @@ Popup {
     }
 
     onOpened: autoClose ? closeTimer.restart() : null
+
+    onClosed: rootApp.closeNotif(notifIndex)
 
     enter: Transition {
         NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 250 }
@@ -240,7 +247,7 @@ Popup {
             border.width: 0 * Constants.scaleFactor
 
             ModuleButton {
-                labelText: "X"
+                labelText: root.notifIndex/*"X"*/
                 width: Constants.dp(20)
                 height: Constants.dp(20)
                 bordered: true

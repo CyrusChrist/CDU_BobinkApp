@@ -67,15 +67,12 @@ Item {
     function openWarningPopup() {
         let cat = nodeFirstOutCategory.value
         if ([1, 2, 4, 5].includes(cat)) {
-            notificationPopup.text = nodeFirstOutMessage.value + " - " + nodeFirstOutMessage2.value;
-            notificationPopup.subText = nodeFirstOutDescription.value;
-            notificationPopup.warningColor = root.colorCat(cat);
-            notificationPopup.importance = 1;
-            notificationPopup.em = nodeFirstOutEM.value;
-            notificationPopup.cm = nodeFirstOutCM.value;
-            notificationPopup.date = stampDateFirstOut[0];
-            notificationPopup.time = stampDateFirstOut[1];
-            notificationPopup.open();
+            rootApp.openNewNotif(1, nodeFirstOutMessage.value + " - " + nodeFirstOutMessage2.value,
+                                 nodeFirstOutDescription.value,
+                                 Constants.cmImages[nodeFirstOutEM.value][nodeFirstOutCM.value],
+                                 root.colorCat(cat), false,
+                                 nodeFirstOutEM.value, nodeFirstOutCM.value,
+                                 stampDateFirstOut[0], stampDateFirstOut[1] )
         }
     }
 
@@ -110,11 +107,9 @@ Item {
 
         // State = aborted
         if (home.currentState === 9 && blockingEvents === 0) {
-            notificationPopup.text = "Réarmer la machine"
-            notificationPopup.subText = "Erreurs fixées"
-            notificationPopup.importance = 1
-            notificationPopup.warningColor = "green"
-            notificationPopup.open()
+            notificationPopup.openNotif(1, "Réarmer la machine",
+                                        "Erreurs fixées",
+                                        "Check", "#green", false)
         }
     }
 

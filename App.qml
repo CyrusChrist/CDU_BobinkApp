@@ -1531,13 +1531,59 @@ ApplicationWindow {
                 }
             }
 
-            NotificationPopup {
-                id: notificationPopup
+            Repeater {
+                id: notificationPopupRepeater
+                model: modelNotifPopup
+                Item {
+                    anchors.fill: parent
+                    function openNotif() { notificationPopup.open() }
+                    property bool isActive: true
+
+                    NotificationPopup {
+                        id: notificationPopup
+
+                        notifIndex: index
+                        importance: parent.isActive ? modelNotifPopup.get(index).importance : 1
+                        text: parent.isActive ? modelNotifPopup.get(index).text : ""
+                        subText: parent.isActive ? modelNotifPopup.get(index).subtext : ""
+                        srcImg: parent.isActive ? "../Images/" + modelNotifPopup.get(index).srcImg + ".svg" : ""
+                        warningColor: parent.isActive ? modelNotifPopup.get(index).color : ""
+                        autoClose: parent.isActive ? modelNotifPopup.get(index).autoclose : true
+                        em: parent.isActive ? modelNotifPopup.get(index).em : 0
+                        cm: parent.isActive ? modelNotifPopup.get(index).cm : 0
+                        date: parent.isActive ? modelNotifPopup.get(index).date : ""
+                        time: parent.isActive ? modelNotifPopup.get(index).time : ""
+                    }
+                }
+            }
+
+            function openNewNotif(importance, text, subtext, srcImg, color, autoclose, em, cm, date, time) {
+                if (em === undefined) { em = 0 }
+                if (cm === undefined) { cm = 0 }
+                if (date === undefined) { date = "" }
+                if (time === undefined) { time = "" }
+
+                modelNotifPopup.append({"importance": importance, "text": text, "subtext": subtext, "srcImg": srcImg, "color": color, "autoclose": autoclose,
+                                       "em": em, "cm": cm, "date": date, "time": time })
+            }
+
+            function closeNotif(index) {
+                notificationPopupRepeater.itemAt(index).isActive = false
+                modelNotifPopup.remove(index, 1)
+            }
+
+            ListModel {
+                id: modelNotifPopup
+
+                onCountChanged: {
+                    if (count > 0) {
+                        notificationPopupRepeater.itemAt(count - 1).openNotif()
+                    }
+                }
             }
 
             Popup {
                 id: loadingScreenPopup
-                // parent: Qt.application.activeWindow
                 height: parent.height
                 width: parent.width
                 modal: true
