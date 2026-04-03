@@ -87,6 +87,123 @@ ApplicationWindow {
 
             // Component.onCompleted:appTheme.setDarkTheme()
 
+            // ------------------- EM TOGGLE ------------------------
+            // ------------------------------------------------------
+
+            function toggleEM(emIndex) {
+                var newMask
+                if (Constants.emInactiveMask & (1 << emIndex)) {
+                    newMask = Constants.emInactiveMask | (1 << emIndex)
+                } else {
+                    newMask = Constants.emInactiveMask & ~(1 << emIndex)
+                }
+                nodeEMInactiveMask.writeValue(Number(newMask))
+                Constants.emInactiveMask = newMask
+            }
+
+            // desactivate all EM, except EM8 : CHAUFFE
+            function desactivateAllEMs() {
+                nodeEMInactiveMask.writeValue(Number(0xFEFF))
+                Constants.emInactiveMask = 0xFEFF
+            }
+
+            // activate all EM : [1, 2, 3, 8] -> Part 1
+            function activateAllEMs() {
+                nodeEMInactiveMask.writeValue(Number(0xFEF1))
+                Constants.emInactiveMask = 0xFEF1
+            }
+
+            function deactivateAllCMs(emIndex) {
+                nodeCMInactiveMasks.itemAt(emIndex).opcNode.writeValue(Number(0xFFFF))
+                var newMasks = Constants.cmInactiveMasks.slice()
+                newMasks[emIndex] = 0xFFFF
+                Constants.cmInactiveMasks = newMasks
+            }
+
+            function activateAllCMsBuffered(emIndex) {
+                nodeCMInactiveMasks.itemAt(emIndex).opcNode.writeValue(Number(Constants.cmInactiveMasksManuelBuffer[emIndex]))
+                var newMasks = Constants.cmInactiveMasks.slice()
+                newMasks[emIndex] = Constants.cmInactiveMasksManuelBuffer[emIndex]
+                Constants.cmInactiveMasks = newMasks
+            }
+
+            OpcUaMonitoredNode {
+                id: nodeEMInactiveMask
+                nodeId: "ns=6;s=Arp.Plc.Eclr/UN00_Modules.EM_InactiveMask"
+                monitored: true
+                onValueChanged: if (value !== "¿") Constants.emInactiveMask = value
+                onWriteCompleted: (success, message, writtenValue) => console.log("OpcUaMonitoredNode: " + nodeId + " = " + writtenValue + " (" + message + ")")
+            }
+
+            Repeater {
+                id: nodeCMInactiveMasks
+                model: 9
+                delegate: Item {
+                    property alias opcNode: innerCMInactiveMask
+                    OpcUaMonitoredNode {
+                        id: innerCMInactiveMask
+                        property int emIndex: index
+                        nodeId: "ns=6;s=Arp.Plc.Eclr/UN00_Modules.EM[" + index + "].CM_InactiveMask"
+                        monitored: true
+                        onValueChanged: {
+                            if (value !== "¿") {
+                                var newMasks = Constants.cmInactiveMasks.slice()
+                                newMasks[emIndex] = value
+                                Constants.cmInactiveMasks = newMasks
+                            }
+                        }
+                        onWriteCompleted: (success, message, writtenValue) => console.log("OpcUaMonitoredNode: " + nodeId + " = " + writtenValue + " (" + message + ")")
+                    }
+                }
+
+            }
+
+            // ------------------- MODE MANUEL ------------------------
+            // --------------------------------------------------------
+
+            property string currentMode: "R&D"
+
+            onCurrentModeChanged: {
+                let modeManueActive = currentMode === "Manuel"
+
+                home.manualModeButton.checked = modeManueActive
+                cantreMaintenance.manuelCantreBtn.checked = modeManueActive
+                preTraitementMaintenance.manuelPreTraitementButton.checked = modeManueActive
+                fourMaintenance.manualModeButton.checked = modeManueActive
+
+                if (modeManueActive) {
+                    Constants.cmInactiveMasksManuelBuffer = Constants.cmInactiveMasks
+                    Constants.cmInactiveMasks = [
+                                0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
+                                0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
+                                0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
+                                0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF
+                            ]
+                    for (var i=0; i < 9; i++) {
+                        deactivateAllCMs(i)
+                    }
+
+                    rootApp.openNewNotif(2, "Passage au mode Manuel",
+                                                "Mise hors tension des axes",
+                                                "Info", "#deae2a", true)
+                    if ([3,4,5,6,10,11,12,13,14,15,16,17].includes(home.currentState)) {
+                        home.writeNode(home.nodeCmdStop, true)
+                    }
+                    desactivateAllEMs()
+
+                } else {
+                    Constants.cmInactiveMasks = Constants.cmInactiveMasksManuelBuffer
+                    activateAllEMs()
+                    for (var j=0; j < 9; j++) {
+                        activateAllCMsBuffered(j)
+                    }
+                    rootApp.openNewNotif(2, "Passage au mode R&D",
+                                                "Machine en veille",
+                                                "Info", "#555", true)
+                }
+            }
+
+
             ConnexionPopup {
                 id: connexionPopup
                 btnState: 0

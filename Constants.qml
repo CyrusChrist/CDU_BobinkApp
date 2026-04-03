@@ -148,6 +148,14 @@ QtObject {
         0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF
     ]
 
+    // Sauvegarde des masques d'inactivé des cm lors du mode Manuel
+    property var cmInactiveMasksManuelBuffer: [
+        0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
+        0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
+        0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
+        0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF
+    ]
+
     // Status actifs (lecture depuis PLC)
     property int emsActive: 0x0000
     property var cmsActive: [

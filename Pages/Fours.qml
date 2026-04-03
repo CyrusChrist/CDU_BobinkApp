@@ -92,6 +92,14 @@ Item {
             ManuelSwitch {
                 id: manualModeButton
                 Layout.alignment: Qt.AlignRight
+
+                onCheckedChanged: {
+                    if (checked) {
+                        rootApp.currentMode = "Manuel"
+                    } else {
+                        rootApp.currentMode = "R&D"
+                    }
+                }
             }
         }
 
@@ -172,7 +180,7 @@ Item {
                                 }
 
                                 Image {
-	sourceSize: Qt.size(width, height)
+	sourceSize: Qt.size(width, height)
                                     source: "../Resources/Images/Camera.svg"
                                     Layout.preferredWidth: congnex1Btn.width * 0.5
                                     Layout.preferredHeight: width
@@ -621,7 +629,7 @@ Item {
                                 }
 
                                 Image {
-	sourceSize: Qt.size(width, height)
+	sourceSize: Qt.size(width, height)
                                     source: "../Resources/Images/Camera.svg"
                                     Layout.preferredWidth: congnex2Btn.width * 0.5
                                     Layout.preferredHeight: width

@@ -92,6 +92,14 @@ Item {
 
             ManuelSwitch {
                 id: manuelPreTraitementButton
+
+                onCheckedChanged: {
+                    if (checked) {
+                        rootApp.currentMode = "Manuel"
+                    } else {
+                        rootApp.currentMode = "R&D"
+                    }
+                }
             }
 
             // StatusIndicatorTricolor {
@@ -620,9 +628,12 @@ Item {
                         CustomSwitch {
                             id: manuelSpraying
                             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                            nodeId: "Arp.Plc.Eclr/startManuSprayingPreTraitement"
                             Layout.preferredWidth: implicitWidth * 1.2 * Constants.scaleFactor
                             Layout.preferredHeight: implicitHeight * 1.2 * Constants.scaleFactor
+
+                            onCheckedChanged: {
+                                if (checked) { toggleCM(root.emIndex, 1) }
+                            }
                         }
 
                     }

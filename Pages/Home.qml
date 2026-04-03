@@ -16,6 +16,8 @@ Item {
 
     property alias manualModeButton: manualModeButton
 
+    property alias nodeCmdStop: nodeCmdStop
+
     // StyledFrame LGL Buttons
     property alias btnCantre: btnCantre
     property alias btnPT: btnPT
@@ -175,7 +177,7 @@ Item {
                     console.log("==== CLEAR ====")
                     writeNode(nodeCmdClear, true)
                 } else {
-                    notificationPopup.openNotif(2, "Commande impossible",
+                    rootApp.openNewNotif(2, "Commande impossible",
                                                 "État actuel de l'automate invalide : " + Constants.stateNames[_item.currentState],
                                                 "Info", "#FFF100", true)
                 }
@@ -192,7 +194,7 @@ Item {
                     console.log("==== STOP ====")
                     writeNode(nodeCmdStop, true)
                 } else {
-                    notificationPopup.openNotif(2, "Commande impossible",
+                    rootApp.openNewNotif(2, "Commande impossible",
                                                 "État actuel de l'automate invalide : " + Constants.stateNames[_item.currentState],
                                                 "Info", "#FFF100", true)
                 }
@@ -444,6 +446,14 @@ Item {
             ManuelSwitch {
                 id: manualModeButton
                 nodeId: ""
+
+                onCheckedChanged: {
+                    if (checked) {
+                        rootApp.currentMode = "Manuel"
+                    } else {
+                        rootApp.currentMode = "R&D"
+                    }
+                }
             }
         }
 

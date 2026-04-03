@@ -40,6 +40,14 @@ Item {
             ManuelSwitch {
                 id: manuelCantreBtn
                 nodeId: ""
+
+                onCheckedChanged: {
+                    if (checked) {
+                        rootApp.currentMode = "Manuel"
+                    } else {
+                        rootApp.currentMode = "R&D"
+                    }
+                }
             }
 
             // StatusIndicatorTricolor {
