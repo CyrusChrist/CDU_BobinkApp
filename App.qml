@@ -91,12 +91,15 @@ ApplicationWindow {
             // ------------------------------------------------------
 
             function toggleEM(emIndex) {
+                var currentMask = Constants.emInactiveMask
                 var newMask
-                if (Constants.emInactiveMask & (1 << emIndex)) {
-                    newMask = Constants.emInactiveMask | (1 << emIndex)
+                var isEnabled = (currentMask & (1 << emIndex)) === 0
+                if (isEnabled) {
+                    newMask = currentMask | (1 << emIndex)
                 } else {
-                    newMask = Constants.emInactiveMask & ~(1 << emIndex)
+                    newMask = currentMask & ~(1 << emIndex)
                 }
+                console.log("NewMask : " + newMask)
                 nodeEMInactiveMask.writeValue(Number(newMask))
                 Constants.emInactiveMask = newMask
             }
@@ -176,7 +179,7 @@ ApplicationWindow {
                     Constants.cmInactiveMasks = [
                                 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
                                 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
-                                0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
+                                0xFFFC, 0xFFFF, 0xFFFF, 0xFFFF,
                                 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF
                             ]
                     for (var i=0; i < 9; i++) {
@@ -186,23 +189,26 @@ ApplicationWindow {
                     rootApp.openNewNotif(2, "Passage au mode Manuel",
                                                 "Mise hors tension des axes",
                                                 "Info", "#deae2a", true)
-                    if ([3,4,5,6,10,11,12,13,14,15,16,17].includes(home.currentState)) {
-                        home.writeNode(home.nodeCmdStop, true)
-                    }
-                    desactivateAllEMs()
+                    home.writeNode(home.nodeCmdReset, true)
+                    manuStartTimer.start()
 
                 } else {
                     Constants.cmInactiveMasks = Constants.cmInactiveMasksManuelBuffer
-                    activateAllEMs()
                     for (var j=0; j < 9; j++) {
                         activateAllCMsBuffered(j)
                     }
+                    home.writeNode(home.nodeCmdStop, true)
                     rootApp.openNewNotif(2, "Passage au mode R&D",
                                                 "Machine en veille",
                                                 "Info", "#555", true)
                 }
             }
 
+            Timer {
+                id: manuStartTimer
+                interval: 500
+                onTriggered: home.writeNode(home.nodeCmdStart, true)
+            }
 
             ConnexionPopup {
                 id: connexionPopup

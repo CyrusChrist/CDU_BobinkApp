@@ -6,9 +6,9 @@ import QtQuick.Layouts 1.16
 import QtQuick.Effects
 import "../Resources/Components"
 import "../"
+
 Item {
     id: _item
-
 
     property bool manuelMode
     property bool automatiqueMode
@@ -17,6 +17,8 @@ Item {
     property alias manualModeButton: manualModeButton
 
     property alias nodeCmdStop: nodeCmdStop
+    property alias nodeCmdStart: nodeCmdStart
+    property alias nodeCmdReset: nodeCmdReset
 
     // StyledFrame LGL Buttons
     property alias btnCantre: btnCantre
@@ -32,7 +34,6 @@ Item {
 
     // -------------------- MOTION LOGIC ------------------------
     // ----------------------------------------------------------
-
     property int currentState: 2
     property bool mainStopBtnClicked: false
 
@@ -57,15 +58,15 @@ Item {
                 reset()
             } else {
                 rootApp.openNewNotif(2, "Remplir le four",
-                                            "Pour terminer le démarrage",
-                                            "Info", "#555", false)
+                                     "Pour terminer le démarrage", "Info",
+                                     "#555", false)
             }
         }
 
         if (currentState === 4) {
             rootApp.openNewNotif(2, "Prêt à démarrer",
-                                        "Machine mise sous tension",
-                                        "Check", "green", false)
+                                 "Machine mise sous tension", "Check",
+                                 "green", false)
         }
     }
 
@@ -91,8 +92,8 @@ Item {
                                          "Info", "#555", false)
                 } else if (k === 3) {
                     rootApp.openNewNotif(2, "Mise sous tension inachevéee",
-                                         getNotDone(),
-                                         "WarningSign", "#FFF100", false)
+                                         getNotDone(), "WarningSign",
+                                         "#FFF100", false)
                 }
 
                 if (k % 2 === 0) {
@@ -106,97 +107,107 @@ Item {
                     k++
                     resetDelay.start()
                 }
-
             } else if (_item.currentState === 15) {
                 rootApp.openNewNotif(2, "Remplir le four",
-                                     "Pour terminer le démarrage",
-                                     "Info", "#555", false)
-
+                                     "Pour terminer le démarrage", "Info",
+                                     "#555", false)
             }
         }
     }
 
     function onPlayPauseChecked(btn) {
-        let isControlButton = (
-                btn === switchStartStopPreTraitement ||
-                btn === switchStartStopImpressionFour2 ||
-                btn === switchStartStopBobibnoir ||
-                btn === playPauseButton ||
-                btn === mainStopButton ||
-                btn === powerButton
-                );
+        let isControlButton = (btn === switchStartStopPreTraitement || btn
+                               === switchStartStopImpressionFour2 || btn
+                               === switchStartStopBobibnoir || btn
+                               === playPauseButton || btn === mainStopButton || btn
+                               === powerButton || btn === manualModeButton)
 
         if (isControlButton) {
             notificationPage.blockingEvents = notificationPage.getBlockingEvents()
             // ====== BTN = PLAYPAUSE ou IMPRESSION ou BOBINOIR ======
-            if (btn === playPauseButton | btn === switchStartStopImpressionFour2 | btn === switchStartStopBobibnoir) {
+            if (btn === playPauseButton | btn === switchStartStopImpressionFour2
+                    | btn === switchStartStopBobibnoir) {
                 rootApp.openNewNotif(2, "Commande impossible",
-                                     "IHM limité à la partie 1",
-                                     "Info", "#FFF100", true)
-            }
-            // ====== BTN = PRETRAIT ======
+                                     "IHM limité à la partie 1", "Info",
+                                     "#FFF100", true)
+            } // ====== BTN = PRETRAIT ======
             else if (btn === switchStartStopPreTraitement) {
                 // blockingEvents > 0 : IMPOSSIBLE DE DEMARRER
                 if (notificationPage.blockingEvents > 0) {
                     notificationPage.openWarningPopup()
-                }
-                // currentState = [4] : IDLE --> Start
+                } // currentState = [4] : IDLE --> Start
                 else if (_item.currentState === 4) {
                     console.log("==== START ====")
                     writeNode(nodeCmdStart, true)
-                }
-                // currentState = [11] : HELD --> Unhold
+                } // currentState = [11] : HELD --> Unhold
                 else if (_item.currentState === 11) {
                     console.log("==== UNHOLD ====")
                     writeNode(nodeCmdUnHold, true)
-                }
-                // currentState = [5] : Suspend --> Unsuspend
+                } // currentState = [5] : Suspend --> Unsuspend
                 else if (_item.currentState === 5) {
                     console.log("==== UNSUSPEND ====")
                     writeNode(nodeCmdUnSuspend, true)
-                }
-                // currentState = [6] : Execute --> Hold
+                } // currentState = [6] : Execute --> Hold
                 else if (_item.currentState === 6) {
                     console.log("==== HOLD ====")
                     writeNode(nodeCmdHold, true)
                 } else {
-                    rootApp.openNewNotif(2, "Commande impossible",
-                                                "État actuel de l'automate invalide : " + Constants.stateNames[_item.currentState],
-                                                "Info", "#FFF100", true)
+                    rootApp.openNewNotif(
+                                2, "Commande impossible",
+                                "État actuel de l'automate invalide : "
+                                + Constants.stateNames[_item.currentState],
+                                "Info", "#FFF100", true)
                 }
-            }
-            // ====== BTN = MAINSTOP ======
+            } // ====== BTN = MAINSTOP ======
             else if (btn === mainStopButton) {
                 // currentState != [8, 9, 1] --> Abort
-                if ([2,3,4,5,6,7,10,11,12,13,14,15,16,17].includes(_item.currentState)) {
+                if ([2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17].includes(
+                            _item.currentState)) {
                     console.log("==== ABORT ====")
                     writeNode(nodeCmdAbort, true)
-                }
-                // currentState = [9] Aborted --> Clear
+                } // currentState = [9] Aborted --> Clear
                 else if (_item.currentState === 9) {
                     console.log("==== CLEAR ====")
                     writeNode(nodeCmdClear, true)
                 } else {
-                    rootApp.openNewNotif(2, "Commande impossible",
-                                                "État actuel de l'automate invalide : " + Constants.stateNames[_item.currentState],
-                                                "Info", "#FFF100", true)
+                    rootApp.openNewNotif(
+                                2, "Commande impossible",
+                                "État actuel de l'automate invalide : "
+                                + Constants.stateNames[_item.currentState],
+                                "Info", "#FFF100", true)
                 }
-            }
-            // ====== BTN = POWER ======
+            } // ====== BTN = POWER ======
             else if (btn === powerButton) {
                 // currentState = [2] : Stopped --> Reset
                 if (_item.currentState === 2) {
                     console.log("==== RESET ====")
                     writeNode(nodeCmdReset, true)
-                }
-                // currentState != [8, 9, 1, 7, 2] --> Stop
-                else if ([3,4,5,6,10,11,12,13,14,15,16,17].includes(_item.currentState)) {
+                } // currentState != [8, 9, 1, 7, 2] --> Stop
+                else if ([3, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17].includes(
+                             _item.currentState)) {
                     console.log("==== STOP ====")
                     writeNode(nodeCmdStop, true)
                 } else {
-                    rootApp.openNewNotif(2, "Commande impossible",
-                                                "État actuel de l'automate invalide : " + Constants.stateNames[_item.currentState],
-                                                "Info", "#FFF100", true)
+                    rootApp.openNewNotif(
+                                2, "Commande impossible",
+                                "État actuel de l'automate invalide : "
+                                + Constants.stateNames[_item.currentState],
+                                "Info", "#FFF100", true)
+                }
+            } // ====== BTN = MANUEL ======
+            else if (btn === manualModeButton) {
+                if (!manualModeButton.checked) {
+                    // currentState === 2 --> ManualMode
+                    if (_item.currentState === 2) {
+                        rootApp.currentMode = "Manuel"
+                    } else {
+                        rootApp.openNewNotif(
+                                    2, "Commande impossible",
+                                    "Mettre la machine hors tension pour passer au mode manuel",
+                                    "Info", "#FFF100", true)
+                    }
+                } else {
+                    rootApp.currentMode = "R&D"
                 }
             }
         }
@@ -204,12 +215,12 @@ Item {
 
     // ------------------- OPCUA NODE TOGGLE ------------------------
     // --------------------------------------------------------------
-
     function toggleModule(module) {
-        module.checked = !module.checked;
+        module.checked = !module.checked
     }
 
     function writeNode(node, value) {
+        // node.pendingRequest = true
         node.writeValue(value)
         if (value) {
             nodeTimer.currentNode = node
@@ -221,71 +232,120 @@ Item {
         id: nodeTimer
         property var currentNode
         interval: 100
-        onTriggered: { writeNode(currentNode, false) }
+        onTriggered: {
+            writeNode(currentNode, false)
+        }
     }
 
     OpcUaMonitoredNode {
+        property bool pendingRequest: false
         id: nodeCmdReset
         nodeId: "ns=6;s=Arp.Plc.Eclr/UN.Command.CntrlCmdSet.Reset"
         monitored: false
+        onValueChanged: {
+        }
+
+        onWriteCompleted: (success, message, writtenValue) => {
+                              console.log(
+                                  "OpcUaMonitoredNode: " + nodeId + " = "
+                                  + writtenValue + " (" + message + ")")
+                          }
     }
     OpcUaMonitoredNode {
         id: nodeCmdStart
         nodeId: "ns=6;s=Arp.Plc.Eclr/UN.Command.CntrlCmdSet.Start"
         monitored: false
+        onWriteCompleted: (success, message, writtenValue) => console.log(
+                              "OpcUaMonitoredNode: " + nodeId + " = "
+                              + writtenValue + " (" + message + ")")
     }
     OpcUaMonitoredNode {
         id: nodeCmdStop
         nodeId: "ns=6;s=Arp.Plc.Eclr/UN.Command.CntrlCmdSet.Stop"
         monitored: false
+        onWriteCompleted: (success, message, writtenValue) => console.log(
+                              "OpcUaMonitoredNode: " + nodeId + " = "
+                              + writtenValue + " (" + message + ")")
     }
     OpcUaMonitoredNode {
         id: nodeCmdHold
         nodeId: "ns=6;s=Arp.Plc.Eclr/UN.Command.CntrlCmdSet.Hold"
         onValueChanged: console.log("hold : " + value)
         monitored: false
+        onWriteCompleted: (success, message, writtenValue) => console.log(
+                              "OpcUaMonitoredNode: " + nodeId + " = "
+                              + writtenValue + " (" + message + ")")
     }
     OpcUaMonitoredNode {
         id: nodeCmdUnHold
         nodeId: "ns=6;s=Arp.Plc.Eclr/UN.Command.CntrlCmdSet.UnHold"
         onValueChanged: console.log("unhold : " + value)
         monitored: false
+        onWriteCompleted: (success, message, writtenValue) => console.log(
+                              "OpcUaMonitoredNode: " + nodeId + " = "
+                              + writtenValue + " (" + message + ")")
     }
     OpcUaMonitoredNode {
         id: nodeCmdUnSuspend
         nodeId: "ns=6;s=Arp.Plc.Eclr/UN.Command.CntrlCmdSet.UnSuspend"
         monitored: false
+        onWriteCompleted: (success, message, writtenValue) => console.log(
+                              "OpcUaMonitoredNode: " + nodeId + " = "
+                              + writtenValue + " (" + message + ")")
     }
     OpcUaMonitoredNode {
         id: nodeCmdAbort
         nodeId: "ns=6;s=Arp.Plc.Eclr/UN.Command.CntrlCmdSet.Abort"
         monitored: false
+        onWriteCompleted: (success, message, writtenValue) => console.log(
+                              "OpcUaMonitoredNode: " + nodeId + " = "
+                              + writtenValue + " (" + message + ")")
     }
     OpcUaMonitoredNode {
         id: nodeCmdClear
         nodeId: "ns=6;s=Arp.Plc.Eclr/UN.Command.CntrlCmdSet.Clear"
         monitored: false
+        onValueChanged: {
+            console.log("VALUE OF NODE" + nodeId + " CHANGED TO " + value)
+        }
+        onWriteCompleted: (success, message, writtenValue) => console.log(
+                              "OpcUaMonitoredNode: " + nodeId + " = "
+                              + writtenValue + " (" + message + ")")
     }
     OpcUaMonitoredNode {
-        id: nodeFour1Plein;
-        nodeId: "ns=6;s=Arp.Plc.Eclr/tapisPleinMBCognexFour1";
+        id: nodeFour1Plein
+        nodeId: "ns=6;s=Arp.Plc.Eclr/tapisPleinMBCognexFour1"
         monitored: true
-        onValueChanged: { if (value && _item.currentState === 15) { reset() } }
+        onValueChanged: {
+            if (value && _item.currentState === 15) {
+                reset()
+            }
+            ;
+            console.log("VALUE CHANGED TO " + value)
+        }
+        onWriteCompleted: (success, message, writtenValue) => console.log(
+                              "OpcUaMonitoredNode: " + nodeId + " = "
+                              + writtenValue + " (" + message + ")")
     }
     OpcUaMonitoredNode {
-        id: node_jogDeposeF1;
-        nodeId: "ns=6;s=Arp.Plc.Eclr/EM3_ModuleControl1.jogDeposeFilsFour1Done";
+        id: node_jogDeposeF1
+        nodeId: "ns=6;s=Arp.Plc.Eclr/EM3_ModuleControl1.jogDeposeFilsFour1Done"
         monitored: true
+        onWriteCompleted: (success, message, writtenValue) => console.log(
+                              "OpcUaMonitoredNode: " + nodeId + " = "
+                              + writtenValue + " (" + message + ")")
     }
     OpcUaMonitoredNode {
         id: nodeFour1Done
         nodeId: "ns=6;s=Arp.Plc.Eclr/EM3_ModuleControl1.remplirFour1Done"
         monitored: true
+        onWriteCompleted: (success, message, writtenValue) => console.log(
+                              "OpcUaMonitoredNode: " + nodeId + " = "
+                              + writtenValue + " (" + message + ")")
     }
 
     // ------------------- CM TOGGLE ------------------------
     // ------------------------------------------------------
-
     function toggleCM(emIndex, cmIndex) {
         var currentMask = Constants.cmInactiveMasks[emIndex]
         var newMask
@@ -318,7 +378,7 @@ Item {
             }
         }
         onWriteCompleted: (success, message) => {
-                              console.log(nodeId + ": " + message);
+                              console.log(nodeId + ": " + message)
                           }
     }
 
@@ -334,7 +394,7 @@ Item {
             }
         }
         onWriteCompleted: (success, message) => {
-                              console.log(nodeId + ": " + message);
+                              console.log(nodeId + ": " + message)
                           }
     }
 
@@ -353,7 +413,7 @@ Item {
                     }
                 }
                 onWriteCompleted: (success, message) => {
-                                      console.log(nodeId + ": " + message);
+                                      console.log(nodeId + ": " + message)
                                   }
             }
         }
@@ -368,7 +428,6 @@ Item {
             switchStartIR.checked = true
         } else {
             switchStartIR.checked = false
-
         }
     }
 
@@ -392,10 +451,10 @@ Item {
 
     function getNotDone() {
         let notDone = ""
-        for (var i=0; i < 4; i++) {
+        for (var i = 0; i < 4; i++) {
             let cmNotDoneMask = cmNotDoneMasks[i]
             let k = []
-            for (var j=0; j < 16; j++) {
+            for (var j = 0; j < 16; j++) {
                 if (((cmNotDoneMask & (1 << j)) !== 0)) {
                     k.push(j)
                 }
@@ -447,12 +506,12 @@ Item {
                 id: manualModeButton
                 nodeId: ""
 
-                onCheckedChanged: {
-                    if (checked) {
-                        rootApp.currentMode = "Manuel"
-                    } else {
-                        rootApp.currentMode = "R&D"
-                    }
+                checked: rootApp.currentMode === "Manuel"
+
+                MouseArea {
+                    anchors.fill: parent
+
+                    onClicked: onPlayPauseChecked(manualModeButton)
                 }
             }
         }
@@ -589,7 +648,6 @@ Item {
                         labelText: qsTr("Impression")
                         anchors.fill: parent
                         bordered: false
-
                     }
 
                     StatusIndicatorTricolor {
@@ -738,7 +796,9 @@ Item {
                     anchors.fill: parent
                     spacing: Constants.dp(10)
 
-                    Item { Layout.fillHeight: true}
+                    Item {
+                        Layout.fillHeight: true
+                    }
 
                     Text {
                         Layout.fillWidth: true
@@ -770,9 +830,10 @@ Item {
                         }
                     }
 
-                    Item { Layout.fillHeight: true}
+                    Item {
+                        Layout.fillHeight: true
+                    }
                 }
-
             }
 
             ScrollView {
@@ -795,11 +856,7 @@ Item {
                         Layout.fillHeight: true
                         Layout.preferredWidth: groupBoxImpression.width
                         Layout.margins: 10 * Constants.scaleFactor
-                        shadowColor: manualModeButton.checked ?
-                                         "#deae2a" :
-                                         (switchStartStopPreTraitement.checked || (chainAsservissement1.checked && playPauseButton.checked)) ?
-                                             "#0FFF35" :
-                                             "black"
+                        shadowColor: manualModeButton.checked ? "#deae2a" : (switchStartStopPreTraitement.checked || (chainAsservissement1.checked && playPauseButton.checked)) ? "#0FFF35" : "black"
 
                         ColumnLayout {
                             anchors.fill: parent
@@ -814,7 +871,6 @@ Item {
                                 verticalAlignment: Text.AlignVCenter
                                 font.bold: true
                                 font.pixelSize: 35 * Constants.scaleFactor
-
                             }
 
                             CustomPlayPause {
@@ -828,7 +884,8 @@ Item {
                                     id: playPreTraitArea
                                     anchors.fill: parent
                                     onClicked: {
-                                        onPlayPauseChecked(switchStartStopPreTraitement)
+                                        onPlayPauseChecked(
+                                                    switchStartStopPreTraitement)
                                     }
 
                                     onPressed: switchStartStopPreTraitement.down = true
@@ -859,8 +916,9 @@ Item {
                                     Layout.preferredHeight: centralRow.componentHeight
                                     nodeId: "ns=6;s=Arp.Plc.Eclr/consigneVitesseMaitreFour1"
                                     nodeIdLinked: "ns=6;s=Arp.Plc.Eclr/vitesseRemplissageFour1"
-                                    offset: 6/100
-                                    enabled: ![3, 12, 14].includes(_item.currentState)
+                                    offset: 6 / 100
+                                    enabled: ![3, 12, 14].includes(
+                                        _item.currentState)
                                     unit: "m/min"
                                     min: 1
                                     max: 400
@@ -878,7 +936,9 @@ Item {
                                 property int currentHeight: 0
 
                                 // Hauteur réelle du bouton
-                                property int targetHeight: switchStartStopPreTraitement.height + gridConsignePreTraitement.height + gridConsignePreTraitement.rowSpacing
+                                property int targetHeight: switchStartStopPreTraitement.height
+                                                           + gridConsignePreTraitement.height
+                                                           + gridConsignePreTraitement.rowSpacing
 
                                 // Pour déclencher le comportement
                                 property bool animate: chainAsservissement1.checked
@@ -886,26 +946,25 @@ Item {
                                 onAnimateChanged: {
                                     if (animate) {
                                         // --- CAS "glissement vers le haut" ---
-                                        placeholderPreTrait.visible = true;
-                                        switchStartStopPreTraitement.visible = false;
-                                        gridConsignePreTraitement.visible = false;
+                                        placeholderPreTrait.visible = true
+                                        switchStartStopPreTraitement.visible = false
+                                        gridConsignePreTraitement.visible = false
 
                                         // on part de targetHeight → 0
-                                        currentHeight = targetHeight;
+                                        currentHeight = targetHeight
                                         Qt.callLater(() => {
-                                                         heightAnimation.to = 0;
-                                                         heightAnimation.start();
-                                                     });
-
+                                                         heightAnimation.to = 0
+                                                         heightAnimation.start()
+                                                     })
                                     } else {
                                         // --- CAS "glissement vers le bas" ---
-                                        placeholderPreTrait.visible = true;
-                                        currentHeight = 0;
+                                        placeholderPreTrait.visible = true
+                                        currentHeight = 0
 
                                         Qt.callLater(() => {
-                                                         heightAnimation.to = targetHeight;
-                                                         heightAnimation.start();
-                                                     });
+                                                         heightAnimation.to = targetHeight
+                                                         heightAnimation.start()
+                                                     })
                                     }
                                 }
 
@@ -919,9 +978,9 @@ Item {
                                     onStopped: {
                                         if (!placeholderPreTrait.animate) {
                                             // On cache le placeholderPreTrait une fois l'animation vers le bas terminée
-                                            placeholderPreTrait.visible = false;
-                                            switchStartStopPreTraitement.visible = true;
-                                            gridConsignePreTraitement.visible = true;
+                                            placeholderPreTrait.visible = false
+                                            switchStartStopPreTraitement.visible = true
+                                            gridConsignePreTraitement.visible = true
                                         }
                                     }
                                 }
@@ -941,10 +1000,22 @@ Item {
                                         height: 1 * Constants.scaleFactor
                                         gradient: Gradient {
                                             orientation: Gradient.Horizontal
-                                            GradientStop { position : 0.0; color: "transparent" }
-                                            GradientStop { position : 0.25; color: appTheme.bodyText }
-                                            GradientStop { position : 0.75; color: appTheme.bodyText}
-                                            GradientStop { position : 1.0; color: "transparent" }
+                                            GradientStop {
+                                                position: 0.0
+                                                color: "transparent"
+                                            }
+                                            GradientStop {
+                                                position: 0.25
+                                                color: appTheme.bodyText
+                                            }
+                                            GradientStop {
+                                                position: 0.75
+                                                color: appTheme.bodyText
+                                            }
+                                            GradientStop {
+                                                position: 1.0
+                                                color: "transparent"
+                                            }
                                         }
                                     }
 
@@ -953,7 +1024,6 @@ Item {
                                         columns: 2
                                         rowSpacing: Constants.spacing * 1.5
                                         columnSpacing: Constants.spacing
-
 
                                         Label {
                                             id: labelPlasmaPreTraitement
@@ -970,7 +1040,8 @@ Item {
                                             Layout.preferredWidth: height * 2
                                             Layout.preferredHeight: centralRow.componentHeight
                                             onClicked: toggleCM(2, 0)
-                                            enabled: ![3, 12, 14].includes(_item.currentState)
+                                            enabled: ![3, 12, 14].includes(
+                                                _item.currentState)
                                         }
                                         Label {
                                             text: qsTr("Traitement\nChimique")
@@ -985,9 +1056,9 @@ Item {
                                             Layout.preferredWidth: height * 2
                                             Layout.preferredHeight: centralRow.componentHeight
                                             onClicked: toggleCM(2, 1)
-                                            enabled: ![3, 12, 14].includes(_item.currentState)
+                                            enabled: ![3, 12, 14].includes(
+                                                _item.currentState)
                                         }
-
 
                                         ScenarioButton {
                                             id: scenarioFour1
@@ -1000,10 +1071,11 @@ Item {
                                             nodeIdExec: "ns=6;s=Arp.Plc.Eclr/remplirFour1"
                                             nodeIdEnd: "ns=6;s=Arp.Plc.Eclr/tapisPleinMBCognexFour1"
                                             endValue: 12
-                                            enabled: [5, 15].includes(_item.currentState) && !nodeFour1Plein.value
+                                            enabled: [5, 15].includes(
+                                                _item.currentState)
+                                            && !nodeFour1Plein.value
 
                                             // property bool scenarioOn: false
-
                                             MouseArea {
                                                 id: areaRemplirFour1
                                                 width: parent.width * 0.7
@@ -1012,11 +1084,13 @@ Item {
 
                                                 onPressed: {
                                                     // blockingEvents > 0 : IMPOSSIBLE DE DEMARRER
-                                                    notificationPage.blockingEvents = notificationPage.getBlockingEvents()
+                                                    notificationPage.blockingEvents
+                                                            = notificationPage.getBlockingEvents()
                                                     if (notificationPage.blockingEvents > 0) {
                                                         notificationPage.openWarningPopup()
                                                     } else {
-                                                        node_jogDeposeF1.writeValue(true)
+                                                        node_jogDeposeF1.writeValue(
+                                                                    true)
                                                         // scenarioFour1.scenarioOn = true
                                                     }
                                                 }
@@ -1024,8 +1098,10 @@ Item {
                                                 onReleased: {
                                                     // blockingEvents > 0 : IMPOSSIBLE DE DEMARRER
                                                     if (notificationPage.blockingEvents <= 0) {
-                                                        node_jogDeposeF1.writeValue(false)
-                                                        jogToRemplirDelay.start()
+                                                        node_jogDeposeF1.writeValue(
+                                                                    false)
+                                                        jogToRemplirDelay.start(
+                                                                    )
                                                     }
                                                 }
 
@@ -1040,19 +1116,15 @@ Item {
 
                                                 //     }
                                                 // }
-
                                                 Timer {
                                                     id: jogToRemplirDelay
                                                     interval: 500
                                                     onTriggered: scenarioFour1.startScenario()
                                                 }
-
                                             }
                                         }
-
                                     }
                                 }
-
                             }
 
                             Item {
@@ -1060,7 +1132,6 @@ Item {
                                 Layout.preferredWidth: 60
                             }
                         }
-
                     }
 
                     ColumnLayout {
@@ -1074,8 +1145,8 @@ Item {
                             width: 120 * Constants.scaleFactor
                             height: 60 * Constants.scaleFactor
                             checked: false
-                            onCheckedChanged: onPlayPauseChecked(chainAsservissement1)
-
+                            onCheckedChanged: onPlayPauseChecked(
+                                                  chainAsservissement1)
                         }
 
                         Item {
@@ -1089,12 +1160,9 @@ Item {
                         id: groupBoxImpression
                         Layout.fillHeight: true
                         Layout.margins: 10 * Constants.scaleFactor
-                        Layout.preferredWidth: _item.width / 3 - 40 * Constants.scaleFactor - chainAsservissement1.width - centralRow.spacing
-                        shadowColor: manualModeButton.checked ?
-                                         "#deae2a" :
-                                         switchStartStopImpressionFour2.checked || playPauseButton.checked ?
-                                             "#0FFF35" :
-                                             "black"
+                        Layout.preferredWidth: _item.width / 3 - 40 * Constants.scaleFactor
+                                               - chainAsservissement1.width - centralRow.spacing
+                        shadowColor: manualModeButton.checked ? "#deae2a" : switchStartStopImpressionFour2.checked || playPauseButton.checked ? "#0FFF35" : "black"
 
                         ColumnLayout {
                             id: layoutImpr
@@ -1124,7 +1192,8 @@ Item {
                                     id: playImpressionArea
                                     anchors.fill: parent
                                     onClicked: {
-                                        onPlayPauseChecked(switchStartStopImpressionFour2)
+                                        onPlayPauseChecked(
+                                                    switchStartStopImpressionFour2)
                                     }
 
                                     onPressed: switchStartStopImpressionFour2.down = true
@@ -1137,7 +1206,8 @@ Item {
                                 id: playPauseButton
                                 checkable: !mainStopButton.checked
                                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                                visible: chainAsservissement1.checked || chainAsservissement3.checked
+                                visible: chainAsservissement1.checked
+                                         || chainAsservissement3.checked
                                 Layout.preferredWidth: groupBoxImpression.width * 0.28
                                 Layout.preferredHeight: width
                                 enabled: false
@@ -1194,13 +1264,11 @@ Item {
                                         color: "#555"
                                         opacity: 0.5
                                     }
-
                                 }
 
                                 background: Rectangle {
                                     color: "transparent"
                                 }
-
                             }
 
                             State {
@@ -1236,11 +1304,10 @@ Item {
                                     unit: "m/min"
                                     min: 1
                                     max: 400
-                                    offset: 6/100 // convertisseur mm/s -> m/min
+                                    offset: 6 / 100 // convertisseur mm/s -> m/min
                                     nodeId: "Arp.Plc.Eclr/vitesseMaitreFour2"
                                     visible: !playPauseButton.visible
                                     enabled: false
-
                                 }
 
                                 NumericInput {
@@ -1253,11 +1320,10 @@ Item {
                                     unit: "m/min"
                                     min: 1
                                     max: 400
-                                    offset: 6/100 // convertisseur mm/s -> m/min
+                                    offset: 6 / 100 // convertisseur mm/s -> m/min
                                     nodeId: "ns=6;s=Arp.Plc.Eclr/consigneVitesseMaitreFours"
                                     visible: playPauseButton.visible
                                     enabled: false
-
                                 }
                             }
 
@@ -1267,10 +1333,22 @@ Item {
                                 height: 1 * Constants.scaleFactor
                                 gradient: Gradient {
                                     orientation: Gradient.Horizontal
-                                    GradientStop { position : 0.0; color: "transparent" }
-                                    GradientStop { position : 0.25; color: appTheme.bodyText }
-                                    GradientStop { position : 0.75; color: appTheme.bodyText}
-                                    GradientStop { position : 1.0; color: "transparent" }
+                                    GradientStop {
+                                        position: 0.0
+                                        color: "transparent"
+                                    }
+                                    GradientStop {
+                                        position: 0.25
+                                        color: appTheme.bodyText
+                                    }
+                                    GradientStop {
+                                        position: 0.75
+                                        color: appTheme.bodyText
+                                    }
+                                    GradientStop {
+                                        position: 1.0
+                                        color: "transparent"
+                                    }
                                 }
                             }
 
@@ -1285,7 +1363,6 @@ Item {
                                     color: appTheme.bodyText
                                     font.pixelSize: 18 * Constants.scaleFactor
                                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-
                                 }
 
                                 CustomSwitch {
@@ -1329,9 +1406,7 @@ Item {
                                     enabled: false
                                 }
                             }
-
                         }
-
                     }
 
                     ColumnLayout {
@@ -1344,7 +1419,8 @@ Item {
                             Layout.alignment: Qt.AlignTop
                             width: 120 * Constants.scaleFactor
                             height: 60 * Constants.scaleFactor
-                            onCheckedChanged: onPlayPauseChecked(chainAsservissement3)
+                            onCheckedChanged: onPlayPauseChecked(
+                                                  chainAsservissement3)
                         }
 
                         Item {
@@ -1359,11 +1435,7 @@ Item {
                         Layout.alignment: Qt.AlignLeft | Qt.AlignTop
                         Layout.margins: 10 * Constants.scaleFactor
                         Layout.preferredWidth: groupBoxImpression.width
-                        shadowColor: manualModeButton.checked ?
-                                         "#deae2a" :
-                                         switchStartStopBobibnoir.checked || (chainAsservissement3.checked && playPauseButton.checked) ?
-                                             "#0FFF35" :
-                                             "black"
+                        shadowColor: manualModeButton.checked ? "#deae2a" : switchStartStopBobibnoir.checked || (chainAsservissement3.checked && playPauseButton.checked) ? "#0FFF35" : "black"
 
                         ColumnLayout {
                             spacing: Constants.spacing * 2
@@ -1392,7 +1464,8 @@ Item {
                                     id: playBobArea
                                     anchors.fill: parent
                                     onClicked: {
-                                        onPlayPauseChecked(switchStartStopBobibnoir)
+                                        onPlayPauseChecked(
+                                                    switchStartStopBobibnoir)
                                     }
 
                                     onPressed: switchStartStopBobibnoir.down = true
@@ -1428,7 +1501,6 @@ Item {
                                     nodeId: "Arp.Plc.Eclr/vitesseMaitreBobinoir"
                                     visible: !chainAsservissement3.checked
                                     enabled: false
-
                                 }
                             }
 
@@ -1442,7 +1514,9 @@ Item {
                                 property int currentHeight: 0
 
                                 // Hauteur réelle du bouton
-                                property int targetHeight: switchStartStopBobibnoir.height + gridConsigneBobinoir.height + gridConsigneBobinoir.rowSpacing
+                                property int targetHeight: switchStartStopBobibnoir.height
+                                                           + gridConsigneBobinoir.height
+                                                           + gridConsigneBobinoir.rowSpacing
 
                                 // Pour déclencher le comportement
                                 property bool animate: chainAsservissement3.checked
@@ -1450,26 +1524,25 @@ Item {
                                 onAnimateChanged: {
                                     if (animate) {
                                         // --- CAS "glissement vers le haut" ---
-                                        placeholderBobinage.visible = true;
-                                        switchStartStopBobibnoir.visible = false;
-                                        gridConsigneBobinoir.visible = false;
+                                        placeholderBobinage.visible = true
+                                        switchStartStopBobibnoir.visible = false
+                                        gridConsigneBobinoir.visible = false
 
                                         // on part de targetHeight → 0
-                                        currentHeight = targetHeight;
+                                        currentHeight = targetHeight
                                         Qt.callLater(() => {
-                                                         heightAnimationBob.to = 0;
-                                                         heightAnimationBob.start();
-                                                     });
-
+                                                         heightAnimationBob.to = 0
+                                                         heightAnimationBob.start()
+                                                     })
                                     } else {
                                         // --- CAS "glissement vers le bas" ---
-                                        placeholderBobinage.visible = true;
-                                        currentHeight = 0;
+                                        placeholderBobinage.visible = true
+                                        currentHeight = 0
 
                                         Qt.callLater(() => {
-                                                         heightAnimationBob.to = targetHeight;
-                                                         heightAnimationBob.start();
-                                                     });
+                                                         heightAnimationBob.to = targetHeight
+                                                         heightAnimationBob.start()
+                                                     })
                                     }
                                 }
 
@@ -1483,8 +1556,8 @@ Item {
                                     onStopped: {
                                         if (!placeholderBobinage.animate) {
                                             // On cache le placeholderPreTrait une fois l'animation vers le bas terminée
-                                            placeholderBobinage.visible = false;
-                                            switchStartStopBobibnoir.visible = true;
+                                            placeholderBobinage.visible = false
+                                            switchStartStopBobibnoir.visible = true
                                             gridConsigneBobinoir.visible = true
                                         }
                                     }
@@ -1497,10 +1570,22 @@ Item {
                                 height: 1 * Constants.scaleFactor
                                 gradient: Gradient {
                                     orientation: Gradient.Horizontal
-                                    GradientStop { position : 0.0; color: "transparent" }
-                                    GradientStop { position : 0.25; color: appTheme.bodyText }
-                                    GradientStop { position : 0.75; color: appTheme.bodyText}
-                                    GradientStop { position : 1.0; color: "transparent" }
+                                    GradientStop {
+                                        position: 0.0
+                                        color: "transparent"
+                                    }
+                                    GradientStop {
+                                        position: 0.25
+                                        color: appTheme.bodyText
+                                    }
+                                    GradientStop {
+                                        position: 0.75
+                                        color: appTheme.bodyText
+                                    }
+                                    GradientStop {
+                                        position: 1.0
+                                        color: "transparent"
+                                    }
                                 }
                             }
 
@@ -1523,7 +1608,7 @@ Item {
                                     Layout.alignment: Qt.AlignHCenter
                                     Layout.preferredWidth: groupBoxImpression.width * 0.5
                                     Layout.preferredHeight: centralRow.componentHeight
-                                    Layout.minimumWidth:  Constants.dp(90)
+                                    Layout.minimumWidth: Constants.dp(90)
                                     Layout.maximumHeight: Constants.dp(70)
                                     Layout.minimumHeight: Constants.dp(30)
                                     horizontalAlignment: Text.AlignHCenter
@@ -1552,7 +1637,6 @@ Item {
                                 }
                             }
                         }
-
                     }
                 }
             }
@@ -1633,15 +1717,17 @@ Item {
         let binaire = (lgl.erreurID >>> 0).toString(2).padStart(16, '0')
 
         // Inverse le bit spécifié
-        let index = 16 - numeroBit; // Calcul de l'index du bit à inverser
+        let index = 16 - numeroBit
 
-        let nouveauBinaire = binaire.substr(0, index) +
-            (binaire[index] === '0' ? '1' : '0') +
-            binaire.substr(index + 1);
+        // Calcul de l'index du bit à inverser
+        let nouveauBinaire = binaire.substr(
+                0,
+                index) + (binaire[index] === '0' ? '1' : '0') + binaire.substr(
+                index + 1)
 
         // Convertit le nouveau binaire en entier
-        let nouvelEntier = parseInt(nouveauBinaire, 2);
+        let nouvelEntier = parseInt(nouveauBinaire, 2)
 
-        return nouvelEntier;
+        return nouvelEntier
     }
 }

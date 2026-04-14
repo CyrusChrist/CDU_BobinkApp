@@ -7,7 +7,7 @@ import Bobink
 
 Item {
     id: root
-    property real scale: 1.0
+    property real scale: 0.8
     property int selectedIndex: 0
     property int pageOpen: stackLayoutPage.currentIndex === 8
 
@@ -60,19 +60,19 @@ Item {
     Flickable {
         id: flick
         anchors.fill: parent
-        contentWidth: 5700 * scale
+        contentWidth: 5700 * root.scale
         contentHeight: height //1106 * scale
         clip: true
 
         Item {
 
             Image {
-	sourceSize: Qt.size(width, height) 
+                sourceSize: Qt.size(width, height)
                 id: svgImage
                 source: "../Resources/Images/Schema3D.svg"
-                width: 5700
-                height: 1106
-                transform: Scale { xScale: scale; yScale: scale }
+                width: 5700 * root.scale
+                height: 1106 * root.scale
+                // transform: Scale { xScale: scale; yScale: scale }
 
                 // MouseArea {
                 //     anchors.fill: parent
@@ -89,10 +89,10 @@ Item {
                 id: repeaterZone
                 model: passageFilBtn.checked ? zoneModelPassageFil : zoneModelInfo
                 delegate: Rectangle {
-                    width: model.width * scale
-                    height: model.height * scale
-                    x: model.x * scale
-                    y: model.y * scale
+                    width: model.width * root.scale
+                    height: model.height * root.scale
+                    x: model.x * root.scale
+                    y: model.y * root.scale
                     color: index === selectedIndex ? "#5FBEB055" : "#5FBEB0ff"
                     border.color: "#288282"
                     border.width: 2

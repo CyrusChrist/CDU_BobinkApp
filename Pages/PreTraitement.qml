@@ -42,7 +42,7 @@ Item {
                 Constants.cmInactiveMasks = newMasks
             }
         }
-        onWriteCompleted: (success, message) => {
+        onWriteCompleted: (success, message, writtenValue) => {
                               console.log(nodeId + ": " + message);
                           }
     }
@@ -93,13 +93,12 @@ Item {
             ManuelSwitch {
                 id: manuelPreTraitementButton
 
-                onCheckedChanged: {
-                    if (checked) {
-                        rootApp.currentMode = "Manuel"
-                    } else {
-                        rootApp.currentMode = "R&D"
-                    }
+                MouseArea {
+                    anchors.fill: parent
+
+                    onClicked: home.onPlayPauseChecked(home.manualModeButton)
                 }
+
             }
 
             // StatusIndicatorTricolor {
@@ -330,6 +329,7 @@ Item {
                             nodeId: "Arp.Plc.Eclr/enableAspirationFranceAir"
                             Layout.preferredWidth: implicitWidth * 1.2 * Constants.scaleFactor
                             Layout.preferredHeight: implicitHeight * 1.2 * Constants.scaleFactor
+                            enabled: false
                             visible: manuelPreTraitementButton.checked
                         }
 
@@ -371,12 +371,14 @@ Item {
                         CustomSwitch {
                             id: manuelSoufflerie
                             visible: manuelPreTraitementButton.checked
-                            enabled: false
-                            disactivated: true
                             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                             nodeId: ""
                             Layout.preferredWidth: implicitWidth * 1.2 * Constants.scaleFactor
                             Layout.preferredHeight: implicitHeight * 1.2 * Constants.scaleFactor
+
+                            onClicked: {
+                                toggleCM(root.emIndex, 2)
+                            }
                         }
 
                     }
@@ -512,6 +514,10 @@ Item {
                             nodeId: "Arp.Plc.Eclr/startManuPlasmaPreTraitement"
                             Layout.preferredWidth: implicitWidth * 1.2 * Constants.scaleFactor
                             Layout.preferredHeight: implicitHeight * 1.2 * Constants.scaleFactor
+
+                            onCheckedChanged: {
+                                toggleCM(root.emIndex, 0)
+                            }
                         }
 
                     }
@@ -632,8 +638,10 @@ Item {
                             Layout.preferredHeight: implicitHeight * 1.2 * Constants.scaleFactor
 
                             onCheckedChanged: {
-                                if (checked) { toggleCM(root.emIndex, 1) }
+                                toggleCM(root.emIndex, 1)
                             }
+
+
                         }
 
                     }
